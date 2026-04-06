@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Behavioral Loops Field Guide — UX Research Case Study</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #d4916a;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(212,145,106,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(212,145,106,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 520px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(212,145,106,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Model Flow ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 460px;
+      text-align: center; padding: 0.9rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--text);
+      position: relative; z-index: 1;
+    }
+    .model-node.accent4-border {
+      border-color: rgba(212,145,106,0.5);
+      background: rgba(212,145,106,0.05);
+    }
+    .model-node.highlight {
+      border-color: rgba(212,145,106,0.5);
+      background: rgba(212,145,106,0.06);
+      color: var(--accent4);
+    }
+    .model-node-title { font-weight: 600; color: var(--text); }
+    .model-node-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(212,145,106,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 22px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Cards ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(212,145,106,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body h4 { margin-top: 0.8rem; margin-bottom: 0.3rem; }
+    .expandable-body h4:first-child { margin-top: 0; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(212,145,106,0.1); color: var(--accent4); border: 1px solid rgba(212,145,106,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Construct Map ── */
+    .construct-map {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    @media (max-width: 640px) { .construct-map { grid-template-columns: 1fr 1fr; } }
+    .construct-node {
+      padding: 0.6rem 0.8rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .construct-node.primary { border-color: rgba(212,145,106,0.4); color: var(--accent4); background: rgba(212,145,106,0.04); }
+    .construct-node.secondary { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .construct-node.tertiary { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Synthesis Theme ── */
+    .synthesis-theme {
+      padding: 1rem 1.2rem; border-left: 3px solid var(--accent4);
+      background: rgba(212,145,106,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain Cards (Framework) ── */
+    .domain-framework { display: flex; flex-direction: column; gap: 0.8rem; }
+    .domain-framework-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem; border-left: 3px solid var(--accent4);
+    }
+    .domain-framework-card:hover { background: var(--surface2); }
+    .domain-fw-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.3rem; }
+    .domain-fw-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .domain-fw-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .domain-fw-mechs { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
+
+    /* ── Principle Pills ── */
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill {
+      font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .principle-pill:hover { border-color: rgba(212,145,106,0.4); color: var(--accent4); background: rgba(212,145,106,0.04); }
+
+    /* ── Fragmentation Visual ── */
+    .fragmentation-card {
+      background: var(--surface2); border: 1px solid rgba(212,145,106,0.3);
+      border-radius: var(--radius); padding: 1.5rem; margin-top: 1.5rem;
+    }
+    .frag-row {
+      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+      padding: 0.6rem 0;
+    }
+    .frag-block {
+      flex: 1; text-align: center; padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .frag-block-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .frag-block-items { font-size: 0.78rem; color: var(--text-dim); }
+    .frag-sep { font-size: 1.3rem; color: var(--text-dim); flex-shrink: 0; }
+    .frag-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">BLFG</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#taxonomy">Taxonomy</a></li>
+    <li><a href="#archetypes">Archetypes</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">Behavioral Science · UX Research · Systems Thinking</div>
+    <h1 class="hero-title">Behavioral Loops<br/><em>Field Guide</em></h1>
+    <p class="hero-subtitle">A structured taxonomy of feedback loops shaping behavior in digital and physical environments.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">Behavioral Science</span>
+      <span class="tag accent2">UX Research</span>
+      <span class="tag accent3">Habit Formation</span>
+      <span class="tag">Human-Computer Interaction</span>
+      <span class="tag">Systems Thinking</span>
+      <span class="tag">Conceptual Research</span>
+    </div>
+    <div class="hero-statement">
+      Many environments shape behavior through recurring feedback structures — behavioral loops where actions produce outcomes, outcomes influence future behavior probability, and systems adapt to user behavior over time. This project organizes and taxonomizes these recurring loop structures across interdisciplinary research.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Explores</h2>
+
+    <p>Behavioral loops are among the most fundamental structures through which environments shape recurring behavior. Whether in digital platforms, consumer products, built environments, or organizational systems, behavior is often sustained, strengthened, or disrupted not by individual motivation but by the feedback structures embedded in the environments where behavior occurs.</p>
+
+    <p>This project synthesizes research from behavioral science, learning theory, habit formation research, cognitive psychology, human-computer interaction, and systems theory to develop a structured taxonomy of recurring behavioral loop types. The goal is conceptual clarity — identifying and categorizing the feedback structures that shape behavioral persistence and change across environments.</p>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Areas of Inquiry</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>Reinforcement Dynamics</h4>
+        <p style="font-size:0.82rem; margin:0;">How do different reinforcement schedules — fixed, variable, continuous, intermittent — influence the strength and persistence of behavioral loops?</p>
+      </div>
+      <div class="card">
+        <h4>Cue-Behavior Associations</h4>
+        <p style="font-size:0.82rem; margin:0;">How do environmental cues trigger habitual behavioral responses, and what determines the salience and strength of cue-behavior associations?</p>
+      </div>
+      <div class="card">
+        <h4>Feedback Interpretation</h4>
+        <p style="font-size:0.82rem; margin:0;">How do individuals interpret behavioral outcomes, and how does that interpretation influence future behavior probability?</p>
+      </div>
+      <div class="card">
+        <h4>Loop Stability &amp; Change</h4>
+        <p style="font-size:0.82rem; margin:0;">What determines whether a behavioral loop stabilizes into a persistent pattern or degrades and dissolves over time?</p>
+      </div>
+      <div class="card">
+        <h4>Environmental Responsiveness</h4>
+        <p style="font-size:0.82rem; margin:0;">How do adaptive systems — digital platforms, AI interfaces, personalized environments — modify future cues based on behavioral signals?</p>
+      </div>
+      <div class="card">
+        <h4>Cross-Domain Patterns</h4>
+        <p style="font-size:0.82rem; margin:0;">How do loop structures vary and converge across domains such as learning, consumption, social interaction, and productivity?</p>
+      </div>
+    </div>
+
+    <div class="note mt3">This project categorizes behavioral structures observed across interdisciplinary research. It does not assume behavioral loops are inherently positive or negative — they are structural features of environments in which repeated interaction occurs.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — PROBLEM SPACE
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Problem Space</div>
+    <h2>The Conceptual Gap</h2>
+
+    <p>Behavioral loops are widely discussed in product design, habit formation literature, and behavioral economics — yet no unified taxonomy organizes the structural variations of these loops across environments. Different fields describe similar structures using different terminology: reinforcement schedules in learning theory, engagement loops in product design, habit loops in behavioral psychology, feedback cycles in systems theory. The result is conceptual fragmentation — the same structural phenomenon described differently depending on the discipline, making it difficult to compare, analyze, or systematically apply loop knowledge across contexts.</p>
+
+    <div class="fragmentation-card">
+      <div class="frag-row">
+        <div class="frag-block">
+          <div class="frag-block-label">Behavioral Psychology</div>
+          <div class="frag-block-items">Reinforcement · Habit formation · Cue-response</div>
+        </div>
+        <div class="frag-sep">≠</div>
+        <div class="frag-block">
+          <div class="frag-block-label">Product Design</div>
+          <div class="frag-block-items">Engagement loops · Retention mechanics · Growth cycles</div>
+        </div>
+      </div>
+      <div class="frag-divider"></div>
+      <div class="frag-row">
+        <div class="frag-block">
+          <div class="frag-block-label">Systems Theory</div>
+          <div class="frag-block-items">Feedback cycles · Balancing loops · Amplification</div>
+        </div>
+        <div class="frag-sep">≠</div>
+        <div class="frag-block">
+          <div class="frag-block-label">Learning Theory</div>
+          <div class="frag-block-items">Reward schedules · Skill acquisition · Progressive mastery</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Contributing Factors</h3>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Terminological fragmentation — the same loop structures are described differently across behavioral science, product design, systems theory, and learning theory</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Mechanism conflation — reinforcement, habit, feedback, and engagement are often used interchangeably despite describing distinct processes</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Domain-specific framing — loops in fitness apps, social media, education, and productivity are studied in isolation rather than as structural variants of common patterns</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Absence of a shared analytical framework — practitioners lack a common vocabulary for identifying, comparing, and modifying loop structures across contexts</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Evaluative ambiguity — without structural categories, it is difficult to distinguish loops that support user goals from loops that may undermine them</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — CONCEPTUAL FRAMING
+════════════════════════════════════════════ -->
+<section id="framing">
+  <div class="container">
+    <div class="section-num">03 — Conceptual Framing</div>
+    <h2>Theoretical Grounding</h2>
+
+    <p>This project draws on five intersecting traditions to conceptualize behavioral loops as structural features of environments.</p>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Operant Conditioning &amp; Reinforcement Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Skinner's (1938) operant conditioning framework established that behavior is shaped by its consequences — reinforcement increases behavior probability, punishment decreases it. The critical insight for loop taxonomy is that the schedule of reinforcement (continuous, fixed-ratio, variable-ratio, fixed-interval, variable-interval) determines not just the rate of behavior but the pattern of persistence and resistance to extinction. Variable-ratio schedules, which deliver reinforcement unpredictably, produce the highest rates of behavioral persistence — a structural principle visible in social media engagement, gambling mechanics, and notification design.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Habit Formation Research</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Wood and Neal (2007) and Gardner (2015) established that habitual behaviors are triggered by contextual cues rather than driven by conscious intention. Habit formation research shows that behavioral loops stabilize when three conditions are met: a consistent environmental cue, a low-friction behavioral response, and a reinforcing outcome that increases the probability of future repetition. Lally et al. (2010) documented that habit formation requires an average of 66 days of consistent repetition, with substantial individual variation. The habit loop — cue, routine, reward — provides the foundational loop structure that more complex loop types elaborate upon.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Systems Theory &amp; Feedback Dynamics</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Systems theory (Meadows, 2008) provides the conceptual language for understanding loops as feedback structures: reinforcing loops amplify behavior (more of the same), balancing loops stabilize behavior (return to equilibrium), and complex systems contain multiple interacting loops that produce emergent behavioral patterns. The concept of leverage points — places in a system where small changes produce disproportionate effects — is directly applicable to loop modification and design intervention.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Behavioral Economics &amp; Choice Architecture</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Thaler and Sunstein (2008) established that the structure of choice environments reliably influences behavior. Applied to behavioral loops, choice architecture theory predicts that the default structure of a loop — what is easiest, most visible, most immediately rewarded — determines which behavioral pathway is most likely to be followed. Friction, defaults, and framing within loop structures determine the probability of loop entry, persistence, and exit.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Persuasive Technology &amp; Interaction Design</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Fogg (2002) and Eyal (2014) documented how digital systems apply behavioral science principles — triggers, variable rewards, investment mechanics, social proof — to create behavioral loops designed for engagement. The Hook Model (Eyal, 2014) describes a specific loop architecture: trigger → action → variable reward → investment → repeat. This framework is widely applied in digital product design but represents only one of several loop structures that shape behavior across environments.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Core Loop Structure</h3>
+    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.2rem;">The following model represents the fundamental loop structure from which all loop archetypes derive.</p>
+
+    <div class="model-flow">
+      <div class="model-node accent4-border">
+        <div class="model-node-title">Cue / Trigger</div>
+        <div class="model-node-sub">Environmental, social, internal, temporal, or digital signal</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Behavior</div>
+        <div class="model-node-sub">Action performed in response to cue · Influenced by friction, affordances, skill</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Outcome</div>
+        <div class="model-node-sub">Result of behavior · Positive, negative, neutral, or ambiguous</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Interpretation</div>
+        <div class="model-node-sub">Cognitive appraisal of outcome · Reward valuation · Attribution</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node highlight">
+        <div class="model-node-title">Future Behavior Probability</div>
+        <div class="model-node-sub">Increased (reinforcement) · Decreased (punishment/extinction) · Variable (intermittent)</div>
+      </div>
+    </div>
+
+    <div class="card mt3" style="border-color: rgba(212,145,106,0.25); background: rgba(212,145,106,0.03);">
+      <h4>↺ Environmental Adaptation Layer</h4>
+      <p style="font-size:0.85rem; margin:0; color:var(--text-muted);">In adaptive systems (digital platforms, AI interfaces, personalized environments), behavioral signals are collected and processed. The system modifies future cues, content, or affordances based on observed behavior — creating a second-order feedback loop where the environment itself evolves in response to user action.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — LOOP TAXONOMY
+════════════════════════════════════════════ -->
+<section id="taxonomy">
+  <div class="container">
+    <div class="section-num">04 — Loop Taxonomy</div>
+    <h2>Structural Categories</h2>
+
+    <p>Behavioral loops can be categorized along several structural dimensions. The following taxonomy organizes loops by their primary reinforcement dynamic.</p>
+
+    <div class="construct-map mt3">
+      <div class="construct-node primary">Reinforcing Loops</div>
+      <div class="construct-node primary">Balancing Loops</div>
+      <div class="construct-node primary">Variable Loops</div>
+      <div class="construct-node secondary">Social Loops</div>
+      <div class="construct-node secondary">Goal-Gradient Loops</div>
+      <div class="construct-node secondary">Consumption Loops</div>
+      <div class="construct-node tertiary">Avoidance Loops</div>
+      <div class="construct-node tertiary">Identity Loops</div>
+      <div class="construct-node tertiary">Adaptive Loops</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Reinforcing Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where behavioral outcomes increase the probability of repetition. Each cycle strengthens the behavior-cue association and the perceived reward value. Example: streak mechanics, progress tracking, skill mastery sequences.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Balancing Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where behavioral outcomes decrease the magnitude of the triggering condition — stabilizing behavior around a set point. Example: stress-relief loops that reduce acute distress but maintain baseline arousal levels.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Variable Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where reinforcement is delivered on an unpredictable schedule — producing high behavioral persistence and resistance to extinction. Example: social media feed refresh, notification checking, content discovery.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Social Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where behavioral outcomes are mediated by social feedback — approval, validation, comparison, belonging signals. The social environment itself becomes the reinforcement structure. Example: posting-feedback-posting cycles, contribution-recognition loops.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Goal-Gradient Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where behavior accelerates as proximity to a goal increases — the closer the goal, the stronger the behavioral drive. Example: progress bars, level completion, gamified milestone systems.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Consumption Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops structured around content or information acquisition — where the act of consuming produces cues for further consumption. Example: autoplay sequences, infinite scroll, algorithmic recommendation chains.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Avoidance Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops maintained by negative reinforcement — behavior is sustained because it reduces or prevents an aversive experience. Example: notification clearing to reduce anxiety, compulsive checking to prevent missed information.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Identity Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where behavior is reinforced by alignment with self-concept or social identity. The behavioral outcome is not external reward but identity confirmation. Example: fitness identity loops, creative practice loops, community membership behaviors.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Adaptive Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Loops where the system modifies its behavior in response to user behavior — creating co-evolutionary dynamics. Example: algorithmic personalization, AI-mediated content selection, adaptive difficulty systems.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — LOOP ARCHETYPES
+════════════════════════════════════════════ -->
+<section id="archetypes">
+  <div class="container">
+    <div class="section-num">05 — Loop Archetypes</div>
+    <h2>Twelve Recurring Patterns</h2>
+
+    <p>The following archetypes represent recurring loop structures observed across digital and physical environments. Each archetype describes a structural pattern — not a judgment about whether the loop is beneficial or harmful.</p>
+
+    <div class="expandable open mt3">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">01 — Progress Feedback Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Goal set → Action toward goal → Progress signal received → Motivation increased → Continued action</p>
+        <h4>Mechanisms</h4>
+        <p>Goal-gradient effect · Self-efficacy reinforcement · Visual progress indicators</p>
+        <h4>Typical Contexts</h4>
+        <p>Fitness tracking · Learning platforms · Onboarding flows · Project management</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Behavior accelerates as proximity to goal increases. Loop strength depends on clarity and frequency of progress feedback. Ambiguous or delayed feedback weakens the loop.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">02 — Variable Reward Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Trigger → Checking behavior → Unpredictable outcome → Heightened engagement → Repeated checking</p>
+        <h4>Mechanisms</h4>
+        <p>Variable-ratio reinforcement · Dopaminergic prediction error · Uncertainty-driven engagement</p>
+        <h4>Typical Contexts</h4>
+        <p>Social media feeds · Notification systems · Email refresh · Content discovery · Gambling mechanics</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Produces highest persistence and resistance to extinction. Users continue checking even when most outcomes are neutral because occasional high-value outcomes maintain the loop. Strength increases with reward variability.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">03 — Social Validation Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Content creation → Social feedback received → Identity-relevant reinforcement → Continued creation to maintain signal</p>
+        <h4>Mechanisms</h4>
+        <p>Social reinforcement · Identity signaling · Peer comparison · Belonging cues</p>
+        <h4>Typical Contexts</h4>
+        <p>Social media posting · Community contributions · Professional networking · Creative platforms</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Behavior is sustained by social feedback rather than intrinsic reward. Loop strength depends on perceived audience responsiveness and identity-relevance of the behavior.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">04 — Streak Maintenance Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Consecutive behavior established → Streak counter visible → Loss aversion activated → Behavior maintained to preserve streak</p>
+        <h4>Mechanisms</h4>
+        <p>Loss aversion · Sunk cost sensitivity · Consistency motivation · Temporal anchoring</p>
+        <h4>Typical Contexts</h4>
+        <p>Language learning apps · Fitness platforms · Daily journaling · Productivity systems</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Motivation shifts from intrinsic interest to streak preservation. Loop becomes fragile — a single break can collapse sustained engagement. Strength increases with streak length but recovery from interruption becomes harder.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">05 — Goal Gradient Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Goal distance perceived → Effort level calibrated → Distance reduces → Effort increases → Completion approached asymptotically</p>
+        <h4>Mechanisms</h4>
+        <p>Goal-gradient effect · Completion motivation · Visual proximity cues</p>
+        <h4>Typical Contexts</h4>
+        <p>Loyalty programs · Level completion · Fundraising progress bars · Checkout flows</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Behavior accelerates nonlinearly as perceived distance to goal decreases. Effective for short-term completion but may produce post-completion dropout. Resetting the goal after completion can sustain the loop.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">06 — Content Consumption Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Content consumed → Engagement signal generated → New content served → Consumption continues → Signal updated</p>
+        <h4>Mechanisms</h4>
+        <p>Algorithmic curation · Autoplay mechanics · Curiosity gap · Cognitive momentum</p>
+        <h4>Typical Contexts</h4>
+        <p>Video streaming · News feeds · Podcast playlists · Social media scrolling · E-commerce browsing</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Content consumption generates behavioral signals that modify future content presentation — creating a co-adaptive loop. Duration and depth of consumption are influenced by content variety and transition friction.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">07 — Information Refresh Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Information environment checked → New information may or may not be present → Checking behavior reinforced on variable schedule → Interval between checks decreases</p>
+        <h4>Mechanisms</h4>
+        <p>Variable-interval reinforcement · FOMO · Novelty-seeking · Information incompleteness</p>
+        <h4>Typical Contexts</h4>
+        <p>Email checking · News monitoring · Social media refresh · Stock tracking · Message waiting</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Structurally similar to variable reward but specific to information-seeking behavior. Loop strengthens when the information environment is perceived as dynamic and when missing information carries perceived cost.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">08 — Skill Development Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Skill practiced → Competence feedback received → Self-efficacy increased → Practice motivation increased → Skill further practiced</p>
+        <h4>Mechanisms</h4>
+        <p>Mastery motivation · Flow state · Competence need satisfaction · Progressive challenge</p>
+        <h4>Typical Contexts</h4>
+        <p>Learning platforms · Games with skill progression · Musical instruments · Athletic training · Professional development</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>One of the most durable loop structures when calibrated correctly. Requires appropriate difficulty — too easy produces boredom, too difficult produces frustration. Optimal loop strength occurs in the zone of proximal development.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">09 — Contribution Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Contribution made → Community response received → Perceived value reinforced → Further contribution motivated</p>
+        <h4>Mechanisms</h4>
+        <p>Social reciprocity · Meaning-making · Identity reinforcement · Community belonging</p>
+        <h4>Typical Contexts</h4>
+        <p>Open source communities · Knowledge platforms · Peer support forums · Creative communities · Wikipedia editing</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Sustained by meaning and community belonging rather than external reward. Loop is resilient to interruption but sensitive to perceived community responsiveness. Absence of acknowledgment degrades the loop.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">10 — Exploration Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Novel stimulus encountered → Curiosity activated → Exploration behavior → Discovery → New stimuli encountered</p>
+        <h4>Mechanisms</h4>
+        <p>Novelty-seeking · Curiosity drive · Information gap · Surprise reward</p>
+        <h4>Typical Contexts</h4>
+        <p>Discovery-oriented platforms · Travel apps · Research tools · Creative exploration · Learning environments</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Driven by intrinsic curiosity rather than external reinforcement. Loop strength depends on the novelty gradient — environments that become predictable lose their capacity to sustain the loop.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">11 — Comparison Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Social information observed → Self-evaluation activated → Discrepancy detected → Compensatory or avoidant behavior → New social information sought</p>
+        <h4>Mechanisms</h4>
+        <p>Social comparison (Festinger, 1954) · Upward/downward comparison · Self-evaluation maintenance · Status monitoring</p>
+        <h4>Typical Contexts</h4>
+        <p>Social media feeds · Leaderboards · Professional networking · Fitness comparisons · Academic environments</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Self-sustaining because comparison activates further information-seeking. Upward comparison may motivate or demotivate depending on perceived attainability. Downward comparison provides temporary self-enhancement but may reduce aspiration.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">12 — Notification Response Loop</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Structure</h4>
+        <p>Notification received → Attention interrupted → App opened → Engagement behavior → Return to previous activity (with lag) → Next notification</p>
+        <h4>Mechanisms</h4>
+        <p>Attention capture · Zeigarnik effect · Variable reward · Social obligation</p>
+        <h4>Typical Contexts</h4>
+        <p>Mobile applications · Messaging platforms · Social media · Email · Productivity tools</p>
+        <h4>Behavioral Dynamics</h4>
+        <p>Externally triggered loop that creates recurrent attention interruption. Loop strength depends on perceived urgency, social obligation, and variable reward anticipation. High-frequency notification loops fragment sustained attention.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — RESEARCH QUESTIONS
+════════════════════════════════════════════ -->
+<section id="rqs">
+  <div class="container">
+    <div class="section-num">06 — Research Questions</div>
+    <h2>Lines of Inquiry</h2>
+
+    <div class="rq-primary">
+      <div class="label">Primary Research Question</div>
+      <div class="question">How can recurring behavioral loop structures be systematically categorized across digital and physical environments?</div>
+    </div>
+
+    <div class="rq-secondary">
+      <div class="rq-item">
+        <span class="rq-num">RQ1</span>
+        <span class="rq-text">What reinforcement structures appear most frequently across digital environments, and how do they differ from those in physical environments?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">RQ2</span>
+        <span class="rq-text">How do different loop structures influence the persistence, flexibility, and resistance to extinction of behavioral patterns?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">RQ3</span>
+        <span class="rq-text">What structural features distinguish loops that stabilize behavior from loops that produce escalation or volatility?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">RQ4</span>
+        <span class="rq-text">How do loop structures interact with user goals — supporting goal-directed behavior or competing with it?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">RQ5</span>
+        <span class="rq-text">What mechanisms increase or decrease loop strength, and how do these mechanisms vary across loop types?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">RQ6</span>
+        <span class="rq-text">How do loops vary across domains — learning, consumption, social interaction, productivity, health behavior — and what structural commonalities persist?</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — METHODOLOGY
+════════════════════════════════════════════ -->
+<section id="method">
+  <div class="container">
+    <div class="section-num">07 — Research Approach</div>
+    <h2>Methodology</h2>
+
+    <p>This project employs an integrative conceptual methodology combining cross-disciplinary literature synthesis with applied taxonomy development.</p>
+
+    <div class="grid-3 mt3">
+      <div class="method-card">
+        <div class="method-icon">📚</div>
+        <div class="method-name">Cross-Disciplinary Literature Synthesis</div>
+        <div class="method-desc">Systematic review across behavioral science, learning theory, habit research, HCI, systems theory, and game design literature</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🗂</div>
+        <div class="method-name">Taxonomy Development</div>
+        <div class="method-desc">Iterative construction of loop categories through thematic analysis of recurring structural patterns across sources</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🔄</div>
+        <div class="method-name">Structural Pattern Comparison</div>
+        <div class="method-desc">Comparative analysis identifying where different disciplines describe structurally equivalent loops using different terminology</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🗺</div>
+        <div class="method-name">Applied Loop Mapping</div>
+        <div class="method-desc">Mapping loop structures onto real product and environmental contexts to test taxonomy applicability and coverage</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🎙</div>
+        <div class="method-name">Practitioner Workshops (Future)</div>
+        <div class="method-desc">Testing framework legibility and practical utility with UX researchers, product designers, and behavioral scientists</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📊</div>
+        <div class="method-name">Behavioral Frequency Tracking (Future)</div>
+        <div class="method-desc">Pre/post measurement examining whether loop-informed design modifications produce measurable behavioral pattern changes</div>
+      </div>
+    </div>
+
+    <div class="note mt3">Current phase: literature synthesis and taxonomy development. Applied validation and practitioner testing are positioned as future research directions.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">08 — Research Artifacts</div>
+    <h2>Conceptual Artifacts</h2>
+
+    <div class="grid-2 mt3">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🔄</div>
+        <div class="artifact-name">Core Loop Cycle Diagram</div>
+        <div class="artifact-note">Cue → Behavior → Outcome → Interpretation → Future Probability</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📊</div>
+        <div class="artifact-name">Reinforcement Schedule Visualization</div>
+        <div class="artifact-note">Fixed vs. variable, ratio vs. interval — schedule effects on loop strength</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🗺</div>
+        <div class="artifact-name">Loop Taxonomy Map</div>
+        <div class="artifact-note">Nine structural categories with relational connections</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📈</div>
+        <div class="artifact-name">Loop Strength Spectrum</div>
+        <div class="artifact-note">Factors that increase or decrease loop persistence across types</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⚖️</div>
+        <div class="artifact-name">Stabilizing vs. Destabilizing Loop Diagram</div>
+        <div class="artifact-note">Structural features distinguishing loops that maintain vs. escalate behavior</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🌐</div>
+        <div class="artifact-name">Environment-Loop Interaction Model</div>
+        <div class="artifact-note">How environmental conditions at different scales amplify or inhibit loop components</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🔀</div>
+        <div class="artifact-name">Loop Clustering Map</div>
+        <div class="artifact-note">How loop types co-occur and interact within product ecosystems</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📐</div>
+        <div class="artifact-name">Archetype Comparison Matrix</div>
+        <div class="artifact-note">12 loop archetypes compared across structure, mechanism, context, and dynamics</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — SYNTHESIS
+════════════════════════════════════════════ -->
+<section id="synthesis">
+  <div class="container">
+    <div class="section-num">09 — Synthesis</div>
+    <h2>Emerging Themes</h2>
+
+    <div class="mt3">
+      <div class="synthesis-theme">
+        <p>Loop components are more modifiable than motivational states. Interventions that modify specific loop components — cue salience, friction level, feedback timing, reinforcement schedule — produce more predictable and durable behavioral changes than interventions targeting individual motivation directly.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Feedback timing and clarity have disproportionate effects on loop strength. Loops with immediate, clear feedback produce stronger behavioral reinforcement than loops with delayed or ambiguous feedback — even when the objective reward value is identical. This makes feedback design one of the highest-leverage intervention points.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Identity-relevant loops are more resistant to disruption and more powerful as formation vehicles. Behavioral loops embedded in identity-relevant contexts — where performing the behavior signals membership in a valued group or affirms a valued self-concept — are more stable and form more quickly than identity-neutral loops.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Variable reinforcement produces persistence at the cost of perceived agency. Variable-ratio and variable-interval reinforcement schedules produce the highest rates of behavioral persistence, but research suggests they may simultaneously reduce perceived autonomous control — creating a tension between engagement sustainability and user agency.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Loops do not operate in isolation — they cluster, compete, and interact. Within any product ecosystem, multiple loops operate simultaneously. Understanding individual loops is necessary but not sufficient — the interaction dynamics between loops determine the emergent behavioral pattern.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">10 — Key Insights</div>
+    <h2>Research Insights</h2>
+
+    <div class="note mb2">Framed as observed patterns and hypothesized relationships across interdisciplinary literature.</div>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">Behavioral loops are structural features of environments, not individual traits</div>
+          <div class="insight-desc">Loop patterns recur across populations interacting with the same environmental structures. The structural properties of the loop — cue salience, friction, reinforcement schedule, feedback clarity — predict behavioral patterns more reliably than individual motivational variables.</div>
+          <span class="insight-tag">Reinforcement Dynamics</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">The same loop structure appears across seemingly different domains</div>
+          <div class="insight-desc">A variable reward loop in social media (feed refresh), email (inbox checking), and gambling (slot mechanics) shares the same structural properties despite operating in entirely different contexts. This convergence suggests that loop taxonomy can meaningfully cross domain boundaries.</div>
+          <span class="insight-tag">Cross-Domain Patterns</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Loop strength is determined by the interaction of all components, not any single feature</div>
+          <div class="insight-desc">Changing one component of a loop — the cue, the friction, the feedback, or the reinforcement — modifies the entire system. This means design interventions targeting individual loop components can produce non-obvious system-level behavioral effects.</div>
+          <span class="insight-tag">System Dynamics</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Adaptive systems create second-order loops that may amplify initial behavioral tendencies</div>
+          <div class="insight-desc">When environments adapt to user behavior — recommending more of what was consumed, adjusting difficulty, personalizing content — the loop itself evolves over time. Initial behavioral tendencies are amplified rather than stabilized, creating trajectories that diverge across individuals.</div>
+          <span class="insight-tag">Adaptive Systems</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">Small changes in friction or feedback can shift behavioral patterns disproportionately</div>
+          <div class="insight-desc">Systems theory predicts that leverage points — small modifications that produce large effects — exist within all feedback structures. In behavioral loops, friction reduction at the point of behavioral initiation and feedback acceleration at the point of outcome delivery represent high-leverage design parameters.</div>
+          <span class="insight-tag">Leverage Points</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">06</div>
+        <div class="insight-body">
+          <div class="insight-title">Loop awareness may itself modify loop dynamics</div>
+          <div class="insight-desc">When individuals or designers become explicitly aware of loop structures operating in their environments, the dynamics of those loops may shift. Awareness does not automatically dissolve a loop, but it may alter the interpretation component — changing how outcomes are appraised and whether behavior is sustained automatically or deliberated consciously.</div>
+          <span class="insight-tag">Metacognition</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11 — FRAMEWORK STRUCTURE
+════════════════════════════════════════════ -->
+<section id="framework">
+  <div class="container">
+    <div class="section-num">11 — Framework Structure</div>
+    <h2>Loop Analysis Framework</h2>
+
+    <p>The following framework organizes the analytical dimensions through which any behavioral loop can be characterized.</p>
+
+    <div class="domain-framework mt3">
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">01 — TRIGGER STRUCTURE</div>
+        <div class="domain-fw-title">What initiates the loop?</div>
+        <div class="domain-fw-desc">Environmental cue, social signal, internal state, temporal pattern, or digital notification. Determines when and under what conditions the loop activates.</div>
+        <div class="domain-fw-mechs">Cue salience · Context consistency · Trigger frequency · Cross-modal cuing</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">02 — BEHAVIORAL PATHWAY</div>
+        <div class="domain-fw-title">What behavior does the loop produce?</div>
+        <div class="domain-fw-desc">What is the friction level? What affordances support the behavior? What alternatives compete for the same behavioral slot?</div>
+        <div class="domain-fw-mechs">Friction level · Behavioral affordances · Competing behaviors · Skill requirements</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">03 — FEEDBACK ARCHITECTURE</div>
+        <div class="domain-fw-title">What feedback follows the behavior?</div>
+        <div class="domain-fw-desc">How quickly? How clearly? How variable? Feedback design determines reinforcement quality and loop strength.</div>
+        <div class="domain-fw-mechs">Timing · Clarity · Variability · Modality · Social vs. intrinsic</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">04 — REINFORCEMENT SCHEDULE</div>
+        <div class="domain-fw-title">What pattern of reinforcement maintains the loop?</div>
+        <div class="domain-fw-desc">Fixed or variable? Continuous or intermittent? The schedule determines persistence, resistance to extinction, and behavioral profile.</div>
+        <div class="domain-fw-mechs">Fixed-ratio · Variable-ratio · Fixed-interval · Variable-interval · Compound schedules</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">05 — ENVIRONMENTAL STABILITY</div>
+        <div class="domain-fw-title">How consistent is the context in which the loop operates?</div>
+        <div class="domain-fw-desc">Stable environments support habit formation. Disrupted contexts challenge loop persistence. Adaptive systems continuously modify context.</div>
+        <div class="domain-fw-mechs">Context consistency · Environmental modification · Adaptive system dynamics · Temporal stability</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">06 — GOAL ALIGNMENT</div>
+        <div class="domain-fw-title">Does the loop support or compete with the user's stated goals?</div>
+        <div class="domain-fw-desc">Loops that align with user goals feel agentic. Loops that compete with user goals may produce engagement without satisfaction.</div>
+        <div class="domain-fw-mechs">Goal congruence · Perceived autonomy · Intrinsic vs. extrinsic alignment · Post-engagement evaluation</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12 — DESIGN IMPLICATIONS
+════════════════════════════════════════════ -->
+<section id="implications">
+  <div class="container">
+    <div class="section-num">12 — Design Implications</div>
+    <h2>Opportunities for Application</h2>
+
+    <p>These implications are framed as opportunities for more informed design reasoning — not as prescriptive guidelines.</p>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Loop Identification</h4>
+        <p>Using the taxonomy to systematically identify which loop structures are operating within a product or environment — making implicit behavioral dynamics explicit and available for deliberate evaluation.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Friction &amp; Feedback Calibration</h4>
+        <p>Applying leverage point analysis to modify loop components strategically — reducing friction where behavior is desired, increasing it where behavioral patterns may conflict with user goals, calibrating feedback timing for appropriate reinforcement.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Agency-Preserving Design</h4>
+        <p>Designing reinforcement structures that sustain engagement while preserving perceived user autonomy — favoring identity-relevant and mastery-oriented loops over variable-reward loops where possible.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Cross-Loop Interaction Analysis</h4>
+        <p>Examining how multiple loops within a product ecosystem interact — identifying where loops compete, cluster, or cancel — and designing for coherent behavioral system dynamics rather than optimizing individual loops in isolation.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Positioning Note</h3>
+    <div class="card" style="border-color: rgba(212,145,106,0.2); background: rgba(212,145,106,0.02);">
+      <p style="font-size:0.9rem; color:var(--text-muted); margin:0;">This project does not assume behavioral loops are inherently positive or negative. Loops are structural features of any environment in which repeated interaction occurs. Understanding loop structure supports more informed design reasoning — it does not prescribe specific behavioral outcomes or impose constraints on innovation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     13 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">13 — Reflection</div>
+    <h2>Scope &amp; Limitations</h2>
+
+    <div class="limitation-grid mt3">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">This is a conceptual taxonomy — not an empirical validation study. Loop archetypes are derived from literature synthesis, not from primary observational data.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The taxonomy focuses on structural patterns and may underrepresent the role of individual differences in loop experience, including motivational orientation, prior history, and cultural context.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Terminological variation across disciplines means that loop categories may not perfectly correspond to the constructs used in any single field.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The twelve archetypes are not exhaustive — additional loop structures may exist that are not captured by the current taxonomy.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Applied validation with practitioners has not yet been conducted. The taxonomy's practical utility requires testing in real design and research contexts.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The interaction dynamics between loops within complex product ecosystems are described conceptually but not modeled formally.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">What This Project Demonstrates</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Research Capabilities</h4>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem; padding:0; margin-top:0.5rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Cross-disciplinary literature synthesis across six fields</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Taxonomy development from thematic analysis</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Structural pattern identification across diverse contexts</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Precise construct definition and operational vocabulary</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Mechanism-level behavioral reasoning</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Applied Thinking</h4>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.4rem; padding:0; margin-top:0.5rem;">
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Translation of behavioral theory into practical analytical tools</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Framework designed for practitioner legibility</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Balanced framing — structural description without moral judgment</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Cross-domain applicability from digital to physical environments</li>
+          <li style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.6rem; align-items:flex-start;"><span style="color:var(--text-dim); flex-shrink:0;">·</span>Leverage point identification for design intervention</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     14 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">14 — Next Steps</div>
+    <h2>Future Research Directions</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Practitioner Validation</h4>
+        <p>Testing the taxonomy with UX researchers, product designers, and behavioral scientists to evaluate legibility, utility, and coverage — identifying gaps and refining categories based on practitioner feedback.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Applied Loop Mapping</h4>
+        <p>Mapping the taxonomy onto specific product ecosystems — documenting which loop types operate, how they interact, and where the framework provides actionable analytical value.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Behavioral Measurement</h4>
+        <p>Developing measurement protocols for loop strength, loop persistence, and loop interaction — enabling empirical validation of the taxonomy's descriptive categories.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Loop Modification Experiments</h4>
+        <p>Designing controlled studies testing whether targeted modifications to specific loop components (friction, feedback timing, reinforcement schedule) produce predicted behavioral pattern changes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">Conceptual Research Artifact — Not a validated empirical study</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
