@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wellness Verified — UX Research Case Study</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #5bb8a9;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(91,184,169,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(91,184,169,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 520px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(91,184,169,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Model Flow ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 460px;
+      text-align: center; padding: 0.9rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--text);
+      position: relative; z-index: 1;
+    }
+    .model-node.accent4-border {
+      border-color: rgba(91,184,169,0.5);
+      background: rgba(91,184,169,0.05);
+    }
+    .model-node.highlight {
+      border-color: rgba(91,184,169,0.5);
+      background: rgba(91,184,169,0.06);
+      color: var(--accent4);
+    }
+    .model-node-title { font-weight: 600; color: var(--text); }
+    .model-node-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+    .model-arrow.loop::after {
+      content: '↺';
+    }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(91,184,169,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 22px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Cards ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(91,184,169,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body h4 { margin-top: 0.8rem; margin-bottom: 0.3rem; }
+    .expandable-body h4:first-child { margin-top: 0; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(91,184,169,0.1); color: var(--accent4); border: 1px solid rgba(91,184,169,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Construct Map ── */
+    .construct-map {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    @media (max-width: 640px) { .construct-map { grid-template-columns: 1fr 1fr; } }
+    .construct-node {
+      padding: 0.6rem 0.8rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .construct-node.primary { border-color: rgba(91,184,169,0.4); color: var(--accent4); background: rgba(91,184,169,0.04); }
+    .construct-node.secondary { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .construct-node.tertiary { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Synthesis Theme ── */
+    .synthesis-theme {
+      padding: 1rem 1.2rem; border-left: 3px solid var(--accent4);
+      background: rgba(91,184,169,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain Cards (Framework) ── */
+    .domain-framework { display: flex; flex-direction: column; gap: 0.8rem; }
+    .domain-framework-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem; border-left: 3px solid var(--accent4);
+    }
+    .domain-framework-card:hover { background: var(--surface2); }
+    .domain-fw-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.3rem; }
+    .domain-fw-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .domain-fw-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .domain-fw-mechs { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
+
+    /* ── Fragmentation Visual ── */
+    .fragmentation-card {
+      background: var(--surface2); border: 1px solid rgba(91,184,169,0.3);
+      border-radius: var(--radius); padding: 1.5rem; margin-top: 1.5rem;
+    }
+    .frag-row {
+      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+      padding: 0.6rem 0;
+    }
+    .frag-block {
+      flex: 1; text-align: center; padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .frag-block-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .frag-block-items { font-size: 0.78rem; color: var(--text-dim); }
+    .frag-sep { font-size: 1.3rem; color: var(--text-dim); flex-shrink: 0; }
+    .frag-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+
+    /* ── Pathway Component ── */
+    .pathway { display: flex; flex-direction: column; gap: 0; }
+    .pathway-step {
+      padding: 1.1rem 1.4rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .pathway-step-header {
+      font-size: 0.85rem; font-weight: 600; color: var(--accent4);
+      letter-spacing: 0.04em; margin-bottom: 0.4rem;
+    }
+    .pathway-step-content { font-size: 0.85rem; color: var(--text-muted); }
+    .pathway-connector {
+      width: 1px; height: 20px; background: var(--border);
+      margin: 0 auto; position: relative;
+    }
+    .pathway-connector::after {
+      content: '↓'; position: absolute; bottom: -7px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.8rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Principle Pills ── */
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill {
+      font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .principle-pill:hover { border-color: rgba(91,184,169,0.4); color: var(--accent4); background: rgba(91,184,169,0.04); }
+
+    /* ── Bullet list in cards ── */
+    .bullet-list { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+    .bullet-list li { font-size: 0.82rem; color: var(--text-muted); padding-left: 1rem; position: relative; }
+    .bullet-list li::before { content: '—'; position: absolute; left: 0; color: var(--text-dim); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">WV</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#domains">Domains</a></li>
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">UX Research · Behavioral Science · Responsible Innovation</div>
+    <h1 class="hero-title">Wellness<br/><em>Verified</em></h1>
+    <p class="hero-subtitle">A structured evaluation framework for understanding how products and digital environments shape human outcomes across behavioral, cognitive, emotional, social, and informational domains.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">UX Research</span>
+      <span class="tag accent2">Behavioral Science</span>
+      <span class="tag accent3">Human-Computer Interaction</span>
+      <span class="tag">Responsible Innovation</span>
+      <span class="tag">Systems Thinking</span>
+      <span class="tag">Conceptual Research</span>
+    </div>
+    <div class="hero-statement">
+      Products increasingly function as environments that shape patterns of human behavior, attention, emotional experience, social interaction, and knowledge exposure. Yet the frameworks used to design and evaluate these products rarely organize around these broader patterns of human functioning. Wellness Verified explores how interdisciplinary research can inform structured approaches for making human outcomes more visible, more systematically understood, and more deliberately considered in design and evaluation processes.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Explores</h2>
+
+    <p>Every designed environment shapes human functioning. A social media platform structures attention, curates social comparison, and determines knowledge exposure. A productivity tool shapes cognitive load, interaction rhythms, and perceived agency. A learning platform influences motivation, skill development, and self-efficacy. These effects are not incidental — they are structural consequences of design decisions that operate through identifiable behavioral mechanisms.</p>
+
+    <p>Wellness Verified is a conceptual evaluation framework exploring how interdisciplinary research — from behavioral science, cognitive psychology, environmental psychology, human-computer interaction, and public health — can be organized into structured lenses for examining how products and digital environments influence patterns of human functioning. The project investigates how design teams might make human outcomes more visible, how evaluation processes might incorporate behavioral science reasoning, and how innovation processes might more explicitly account for downstream effects on the people who use the systems they create.</p>
+
+    <p>The framework is positioned as a reasoning tool and conceptual infrastructure — not as a compliance system, a rating scheme, or a restriction on innovation. It explores how the gap between what interdisciplinary research shows about products' human effects and how those products are currently evaluated might be bridged through structured, collaborative, scientifically grounded approaches.</p>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Areas of Inquiry</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>Behavioral Influence Assessment</h4>
+        <p style="font-size:0.82rem; margin:0;">How can design teams systematically identify the behavioral mechanisms through which their products shape user behavior — including habit formation, reinforcement dynamics, and choice architecture?</p>
+      </div>
+      <div class="card">
+        <h4>Attention &amp; Cognitive Effects</h4>
+        <p style="font-size:0.82rem; margin:0;">How do products structure the allocation of attention, the management of cognitive load, and the quality of decision-making environments?</p>
+      </div>
+      <div class="card">
+        <h4>Emotional &amp; Social Dynamics</h4>
+        <p style="font-size:0.82rem; margin:0;">How do products shape emotional experience, social comparison patterns, perceived relational quality, and conditions for social connection?</p>
+      </div>
+      <div class="card">
+        <h4>Knowledge &amp; Epistemic Effects</h4>
+        <p style="font-size:0.82rem; margin:0;">How do algorithmic curation and information architecture influence what individuals know, believe, and are equipped to critically evaluate?</p>
+      </div>
+      <div class="card">
+        <h4>Agency &amp; Autonomy</h4>
+        <p style="font-size:0.82rem; margin:0;">How do design decisions — defaults, personalization, opacity — influence users' subjective sense of control over their experience?</p>
+      </div>
+      <div class="card">
+        <h4>Evaluation Infrastructure</h4>
+        <p style="font-size:0.82rem; margin:0;">How might structured frameworks support design teams in reasoning about these effects as part of existing innovation workflows?</p>
+      </div>
+    </div>
+
+    <div class="note mt3">This project is a conceptual research exploration and applied framework development effort. It does not assume digital technologies are inherently harmful, nor does it prescribe specific design outcomes. It explores how human outcomes may be more explicitly considered alongside existing priorities.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — PROBLEM SPACE
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Problem Space</div>
+    <h2>The Evaluation Gap</h2>
+
+    <p>Products are routinely evaluated along dimensions of usability, engagement, performance, and commercial viability. These are important criteria. However, the broader patterns of human functioning that products influence — attention quality, emotional regulation, relational experience, knowledge exposure, perceived agency — are rarely evaluated with equivalent rigor. This is not because the relevant knowledge does not exist. Behavioral science, cognitive psychology, environmental psychology, and public health have produced decades of research on how environments shape human functioning. The problem is structural: this knowledge is fragmented across disciplines, uses inconsistent terminology, and has not been organized into forms that are systematically applicable to product design and evaluation.</p>
+
+    <div class="fragmentation-card">
+      <div class="frag-row">
+        <div class="frag-block">
+          <div class="frag-block-label">What Products Are Evaluated For</div>
+          <div class="frag-block-items">Usability · Engagement · Performance · Retention · Conversion · Growth</div>
+        </div>
+        <div class="frag-sep">≠</div>
+        <div class="frag-block">
+          <div class="frag-block-label">What Products Also Influence</div>
+          <div class="frag-block-items">Attention quality · Behavioral patterns · Emotional experience · Social connection · Knowledge exposure · Perceived agency</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Contributing Factors</h3>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Knowledge fragmentation — research on products' human effects is distributed across seven or more disciplines using incompatible terminology and methods</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Evaluation scope limitation — dominant product evaluation metrics (engagement, retention, NPS) do not capture the human functioning domains most consistently studied in behavioral science</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Temporal mismatch — product evaluation captures immediate interaction outcomes while behavioral science documents cumulative effects that manifest over weeks, months, and years</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Organizational incentive misalignment — design organizations are structured around engagement and growth metrics, not human functioning outcomes</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Absence of shared conceptual infrastructure — design teams lack a common vocabulary for identifying, discussing, and evaluating products' effects on human functioning</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — CONCEPTUAL FRAMING
+════════════════════════════════════════════ -->
+<section id="framing">
+  <div class="container">
+    <div class="section-num">03 — Conceptual Framing</div>
+    <h2>Theoretical Grounding</h2>
+
+    <p>Wellness Verified draws on six intersecting theoretical traditions to conceptualize products as environments that shape human functioning through identifiable mechanisms.</p>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Behavioral Economics &amp; Choice Architecture</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Thaler and Sunstein (2008) established that the arrangement of options — defaults, framing, option presentation — reliably shapes behavioral outcomes. Every product embeds a choice architecture. The evaluation question is not whether products influence behavior, but whether the behavioral influence embedded in design decisions is made visible and deliberate.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Environmental Psychology</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Kaplan and Kaplan (1989) documented that environmental conditions influence attentional restoration, stress response, and cognitive functioning. Ulrich (1984) demonstrated that physical environmental features carry physiological consequences. Applied to product design, these traditions predict that the informational, temporal, and interaction structures of digital environments influence cognitive and emotional functioning through environmental mechanisms.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Habit Formation &amp; Reinforcement Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Wood and Neal (2007) established that habitual behavior is triggered by contextual cues rather than driven by conscious intention. Products that embed their use in daily behavioral sequences function as contextual cuing environments. Understanding which reinforcement structures are embedded in a product's design is a prerequisite for evaluating that product's effects on behavioral patterns.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Self-Determination Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Deci and Ryan (2000) identified autonomy, competence, and relatedness as fundamental psychological needs. Products that support perceived autonomy, build competence, and facilitate genuine social connection are more likely to support adaptive human functioning. Products that undermine these needs — through opaque control, learned helplessness, or social comparison — may produce engagement without satisfaction.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Social Comparison Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Festinger (1954) established that individuals evaluate their circumstances through comparison to others. Digital social environments create structural conditions for frequent upward comparison — curated self-presentation, visible engagement metrics, algorithmically amplified aspirational content. Whether a product's social architecture produces beneficial or detrimental comparison dynamics is an evaluable design question.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Social Epistemology</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Fricker (2007) identified epistemic injustice as a condition in which individuals' capacity for knowledge acquisition is systematically constrained. Products that mediate information access — search engines, recommendation systems, content platforms — shape epistemic conditions at population scale. Evaluating these products requires examining not just what information is delivered but how the conditions for knowledge acquisition are structured.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Evaluation Lens Model</h3>
+
+    <div class="model-flow">
+      <div class="model-node accent4-border">
+        <div class="model-node-title">Design Decisions</div>
+        <div class="model-node-sub">Interface structure · Defaults · Algorithms · Feedback mechanisms · Information architecture</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">System Mechanisms</div>
+        <div class="model-node-sub">Affordances · Reinforcement structures · Choice architecture · Personalization · Curation</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Behavioral Loops</div>
+        <div class="model-node-sub">Habitual patterns · Engagement cycles · Social feedback loops · Information consumption loops</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Experience Patterns</div>
+        <div class="model-node-sub">Attention quality · Emotional states · Social dynamics · Cognitive load · Perceived control</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Human Outcomes</div>
+        <div class="model-node-sub">Behavioral · Cognitive · Emotional · Social · Epistemic · Motivational · Identity</div>
+      </div>
+      <div class="model-arrow loop"></div>
+      <div class="model-node highlight">
+        <div class="model-node-title">Feedback into System Adaptation</div>
+        <div class="model-node-sub">Behavioral signals collected → System model updated → Design modified → New outcomes produced</div>
+      </div>
+    </div>
+
+    <div class="card mt2">
+      <p style="font-size:0.87rem; margin:0;">The evaluation lens operates bidirectionally. Products shape human outcomes, and human behavioral responses feed back into adaptive systems that modify future design conditions. Wellness Verified examines both the forward pathway (design → outcomes) and the feedback pathway (behavior → system adaptation → modified design).</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — HUMAN OUTCOME DOMAINS
+════════════════════════════════════════════ -->
+<section id="domains">
+  <div class="container">
+    <div class="section-num">04 — Human Outcome Domains</div>
+    <h2>Domains of Human Functioning</h2>
+
+    <p>The following taxonomy organizes the domains of human functioning most consistently identified across interdisciplinary research as influenced by product and digital environment design.</p>
+
+    <div class="domain-framework">
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 01</div>
+        <div class="domain-fw-title">Behavior Patterns</div>
+        <div class="domain-fw-desc">Observable patterns of action, habit, and activity produced through repeated interaction with designed environments.</div>
+        <div class="domain-fw-mechs">Mechanisms: Habit formation · Reinforcement dynamics · Behavioral persistence · Interaction frequency</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 02</div>
+        <div class="domain-fw-title">Attention Patterns</div>
+        <div class="domain-fw-desc">The quality, duration, fragmentation, and structuring of cognitive focus as shaped by product design architecture.</div>
+        <div class="domain-fw-mechs">Mechanisms: Attention allocation · Cognitive switching costs · Information prioritization · Notification interruption</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 03</div>
+        <div class="domain-fw-title">Cognitive Experience</div>
+        <div class="domain-fw-desc">The demands placed on working memory, decision-making capacity, and information processing by product interaction environments.</div>
+        <div class="domain-fw-mechs">Mechanisms: Perceived complexity · Mental effort · Decision load · Cognitive fatigue</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 04</div>
+        <div class="domain-fw-title">Emotional Experience</div>
+        <div class="domain-fw-desc">Affective states, emotional regulation capacity, and the felt quality of experience during and after product interaction.</div>
+        <div class="domain-fw-mechs">Mechanisms: Affective response · Emotional regulation · Frustration · Satisfaction · Mood influence</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 05</div>
+        <div class="domain-fw-title">Social Experience</div>
+        <div class="domain-fw-desc">Patterns of social connection, comparison, perceived norms, and relational quality shaped by digitally mediated social environments.</div>
+        <div class="domain-fw-mechs">Mechanisms: Social connection · Social comparison · Perceived norms · Relational quality · Belonging</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 06</div>
+        <div class="domain-fw-title">Knowledge Exposure</div>
+        <div class="domain-fw-desc">The informational environment produced by algorithmic curation and information architecture — what individuals encounter, know, and can evaluate.</div>
+        <div class="domain-fw-mechs">Mechanisms: Information diversity · Epistemic agency · Content distribution · Source quality</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 07</div>
+        <div class="domain-fw-title">Motivation &amp; Agency</div>
+        <div class="domain-fw-desc">The degree to which products support or constrain self-directed goal pursuit, perceived autonomy, and intrinsic motivation.</div>
+        <div class="domain-fw-mechs">Mechanisms: Goal pursuit · Self-efficacy · Perceived autonomy · Intrinsic vs. extrinsic motivation</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 08</div>
+        <div class="domain-fw-title">Identity Processes</div>
+        <div class="domain-fw-desc">How products shape self-presentation, identity reinforcement, role experimentation, and the social signaling environment.</div>
+        <div class="domain-fw-mechs">Mechanisms: Self-presentation · Identity reinforcement · Role experimentation · Social signaling</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 09</div>
+        <div class="domain-fw-title">Temporal Experience</div>
+        <div class="domain-fw-desc">How products influence the subjective experience of time — perceived duration, interaction rhythms, and temporal boundaries.</div>
+        <div class="domain-fw-mechs">Mechanisms: Time perception · Usage duration · Interaction pacing · Temporal boundary clarity</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 10</div>
+        <div class="domain-fw-title">Environmental Exposure</div>
+        <div class="domain-fw-desc">The structural characteristics of the interaction environment itself — information density, stimulus frequency, and choice architecture.</div>
+        <div class="domain-fw-mechs">Mechanisms: Information density · Stimulus frequency · Choice complexity · Environmental defaults</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — EVALUATION LENS STRUCTURE
+════════════════════════════════════════════ -->
+<section id="framework">
+  <div class="container">
+    <div class="section-num">05 — Evaluation Lens Structure</div>
+    <h2>Multi-Dimensional Evaluation</h2>
+
+    <p>Products influence human functioning through multiple pathways operating simultaneously. The Wellness Verified evaluation lens organizes these pathways along four analytical dimensions.</p>
+
+    <div class="construct-map mt3">
+      <div class="construct-node primary">Proximal Effects</div>
+      <div class="construct-node primary">Distal Effects</div>
+      <div class="construct-node primary">Direct Pathways</div>
+      <div class="construct-node secondary">Indirect Pathways</div>
+      <div class="construct-node secondary">Short-Term Effects</div>
+      <div class="construct-node secondary">Long-Term Effects</div>
+      <div class="construct-node tertiary">Intended Outcomes</div>
+      <div class="construct-node tertiary">Emergent Outcomes</div>
+      <div class="construct-node tertiary">System-Level Effects</div>
+    </div>
+
+    <div class="mt3">
+
+      <div class="expandable open">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Proximal vs. Distal Effects</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Proximal effects are immediate consequences of design decisions — how a notification structures attention in the moment, how a default shapes a behavioral choice. Distal effects are downstream consequences that manifest over time — how habitual notification response patterns influence sustained attentional capacity, how default-driven choices compound into behavioral trajectories.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Direct vs. Indirect Pathways</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Direct pathways connect design decisions to human outcomes through a single identifiable mechanism. Indirect pathways operate through mediating mechanisms — a social comparison feature may not directly produce emotional distress, but may influence self-evaluation, which influences mood, which influences behavioral patterns.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Short-Term vs. Long-Term Effects</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Short-term effects are observable within a single interaction session. Long-term effects manifest across repeated use — habitual behavior formation, cumulative emotional exposure, gradual shifts in knowledge environments. Evaluation frameworks that only capture short-term effects systematically miss the outcomes most consequential for human functioning.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Intended vs. Emergent Outcomes</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Intended outcomes are design goals — the experiences and behaviors a product is designed to produce. Emergent outcomes are consequences that arise from the interaction of design features with human behavioral and cognitive systems in ways not explicitly anticipated during development. Both are legitimate subjects of evaluation.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — RESEARCH QUESTIONS
+════════════════════════════════════════════ -->
+<section id="rq">
+  <div class="container">
+    <div class="section-num">06 — Research Questions</div>
+    <h2>Lines of Inquiry</h2>
+
+    <div class="rq-primary">
+      <div class="label">Primary Research Question</div>
+      <div class="question">How might interdisciplinary research inform structured approaches for evaluating how products and digital environments influence patterns of human functioning?</div>
+    </div>
+
+    <div class="rq-secondary">
+      <div class="rq-item">
+        <div class="rq-num">RQ1</div>
+        <div class="rq-text">What domains of human functioning are most consistently identified across disciplines as influenced by product design?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ2</div>
+        <div class="rq-text">What behavioral mechanisms most commonly mediate the relationship between design decisions and human outcomes?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ3</div>
+        <div class="rq-text">How do digital environments structure patterns of attention, behavior, emotional experience, and knowledge exposure?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ4</div>
+        <div class="rq-text">How might evaluation frameworks support more transparent reasoning about products' effects on human functioning?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ5</div>
+        <div class="rq-text">What conceptual gaps exist between behavioral science research and current product development evaluation practices?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ6</div>
+        <div class="rq-text">How might interdisciplinary collaboration support more robust evaluation of products' human effects?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — METHODOLOGY
+════════════════════════════════════════════ -->
+<section id="method">
+  <div class="container">
+    <div class="section-num">07 — Research Approach</div>
+    <h2>Methodology</h2>
+
+    <p>This project employs an integrative conceptual methodology combining interdisciplinary literature synthesis with applied framework development and toolkit design.</p>
+
+    <div class="grid-3">
+      <div class="method-card">
+        <div class="method-icon">📚</div>
+        <div class="method-name">Interdisciplinary Literature Synthesis</div>
+        <div class="method-desc">Systematic review across behavioral science, environmental psychology, HCI, cognitive psychology, social psychology, and public health</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🗂</div>
+        <div class="method-name">Framework Development</div>
+        <div class="method-desc">Iterative construction of evaluation lenses through synthesis of recurring mechanism-outcome relationships across disciplines</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🔧</div>
+        <div class="method-name">Toolkit Design</div>
+        <div class="method-desc">Development of structured reasoning tools — worksheets, mapping canvases, audit protocols — for applied use by design and research teams</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🗺</div>
+        <div class="method-name">Domain Mapping</div>
+        <div class="method-desc">Mapping human outcome domains to identifiable design decisions and behavioral mechanisms across product categories</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🎙</div>
+        <div class="method-name">Practitioner Testing (Future)</div>
+        <div class="method-desc">Testing framework and toolkit legibility, utility, and workflow integration with UX researchers, product designers, and behavioral scientists</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📊</div>
+        <div class="method-name">Applied Case Analysis (Future)</div>
+        <div class="method-desc">Applying the evaluation framework to specific product features to test its capacity to surface human outcome considerations</div>
+      </div>
+    </div>
+
+    <div class="note mt3">Current phase: conceptual framework development and toolkit design. Practitioner validation and applied case analysis are positioned as future research directions.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">08 — Research Artifacts</div>
+    <h2>Conceptual Artifacts</h2>
+
+    <div class="grid-2">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🔄</div>
+        <div class="artifact-name">Evaluation Framework Diagram</div>
+        <div class="artifact-note">Design Decisions → System Mechanisms → Behavioral Loops → Experience Patterns → Human Outcomes → Feedback</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🌐</div>
+        <div class="artifact-name">Human Outcome Domains Map</div>
+        <div class="artifact-note">Ten-domain taxonomy with mechanism pathways and cross-domain relationships</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⚡</div>
+        <div class="artifact-name">Mechanism Mapping Diagram</div>
+        <div class="artifact-note">How design features translate into behavioral, cognitive, and emotional effects through named mechanisms</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🔀</div>
+        <div class="artifact-name">Proximal vs. Distal Effects Diagram</div>
+        <div class="artifact-note">Near-term interaction effects vs. long-term cumulative outcomes across human functioning domains</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📊</div>
+        <div class="artifact-name">Design-Practice Gap Matrix</div>
+        <div class="artifact-note">What products are evaluated for vs. what they also influence — cross-tabulated by evaluation framework and outcome domain</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🗺</div>
+        <div class="artifact-name">Workflow Integration Diagram</div>
+        <div class="artifact-note">How evaluation tools integrate into existing product development cycles</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📐</div>
+        <div class="artifact-name">Loop Identification Guide</div>
+        <div class="artifact-note">Structured protocol for identifying which behavioral loops are operating within a product environment</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🧭</div>
+        <div class="artifact-name">System Influence Boundary Map</div>
+        <div class="artifact-note">Scoping the boundaries of a product's influence — what it directly shapes, what it indirectly influences, what it does not affect</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — FRAMEWORK COMPONENTS
+════════════════════════════════════════════ -->
+<section id="components">
+  <div class="container">
+    <div class="section-num">09 — Framework Components</div>
+    <h2>Evaluation Architecture</h2>
+
+    <p>The Wellness Verified evaluation framework consists of three integrated layers: domain identification, mechanism analysis, and pathway mapping.</p>
+
+    <div class="pathway mt3">
+      <div class="pathway-step">
+        <div class="pathway-step-header">Layer 1 — Domain Identification</div>
+        <div class="pathway-step-content">Which domains of human functioning does this product or feature potentially influence? Using the ten-domain taxonomy, evaluation begins by identifying the relevant outcome domains for the specific product context.</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Layer 2 — Mechanism Analysis</div>
+        <div class="pathway-step-content">Through what behavioral mechanisms does influence occur? For each identified domain, the framework maps the specific design features and behavioral mechanisms that mediate the relationship between product design and human outcomes.</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Layer 3 — Pathway Mapping</div>
+        <div class="pathway-step-content">What are the proximal and distal effects? The framework traces the full influence pathway from design decision through mechanism to outcome — distinguishing short-term from long-term effects, direct from indirect pathways, and intended from emergent consequences.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — APPLIED WORKFLOW TOOLS
+════════════════════════════════════════════ -->
+<section id="toolkit">
+  <div class="container">
+    <div class="section-num">10 — Applied Workflow Tools</div>
+    <h2>Design Team Toolkit</h2>
+
+    <p>The following tools are designed as conceptual supports for reasoning about human outcomes within existing design and evaluation workflows. They are structured reasoning aids — not compliance checklists.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <h4>Human Outcomes Mapping Canvas</h4>
+        <p style="font-size:0.82rem; margin:0;">A structured template for mapping a product's potential influence across the ten human outcome domains — identifying which domains are relevant, which mechanisms are active, and where evaluation gaps exist.</p>
+      </div>
+      <div class="card">
+        <h4>Mechanism Identification Worksheet</h4>
+        <p style="font-size:0.82rem; margin:0;">A guided analysis tool for identifying which behavioral mechanisms (reinforcement structures, affordances, defaults, feedback loops, social comparison dynamics) are embedded in a product's design.</p>
+      </div>
+      <div class="card">
+        <h4>Loop Identification Tool</h4>
+        <p style="font-size:0.82rem; margin:0;">A structured protocol for identifying which behavioral loops are operating within a product environment — drawing on the Behavioral Loops Field Guide taxonomy of twelve loop archetypes.</p>
+      </div>
+      <div class="card">
+        <h4>Proximal vs. Distal Effects Map</h4>
+        <p style="font-size:0.82rem; margin:0;">A mapping tool for distinguishing immediate interaction effects from cumulative long-term outcomes — supporting evaluation that accounts for temporal dimension.</p>
+      </div>
+      <div class="card">
+        <h4>Human Outcomes Risk Scan</h4>
+        <p style="font-size:0.82rem; margin:0;">A structured scan identifying domains where product design may produce unintended negative effects on human functioning — framed as risk identification, not risk judgment.</p>
+      </div>
+      <div class="card">
+        <h4>Human Outcomes Opportunity Scan</h4>
+        <p style="font-size:0.82rem; margin:0;">A complementary tool identifying domains where product design may produce positive effects on human functioning that are not currently measured or communicated.</p>
+      </div>
+      <div class="card">
+        <h4>Mechanism Audit Tool</h4>
+        <p style="font-size:0.82rem; margin:0;">A systematic audit protocol for examining which behavioral mechanisms are active within a product environment and whether they align with stated design intent.</p>
+      </div>
+      <div class="card">
+        <h4>Design Decision Impact Map</h4>
+        <p style="font-size:0.82rem; margin:0;">A mapping tool connecting specific design decisions (interface layout, default settings, notification timing) to predicted human outcome effects across domains.</p>
+      </div>
+      <div class="card">
+        <h4>Feedback Loop Identification Guide</h4>
+        <p style="font-size:0.82rem; margin:0;">A structured guide for tracing how user behavioral data feeds back into system adaptation — making adaptive loops visible for evaluation.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Example Workflow Sequence</h3>
+
+    <div class="pathway">
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 1 — Identify interaction environment</div>
+        <div class="pathway-step-content">Define the product, feature, or system being evaluated and its interaction context</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 2 — Identify mechanisms present</div>
+        <div class="pathway-step-content">Using the Mechanism Identification Worksheet, map which behavioral mechanisms are embedded in the design</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 3 — Identify loop structures</div>
+        <div class="pathway-step-content">Using the Loop Identification Tool, identify which behavioral loops are operating and their structural properties</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 4 — Identify human outcome domains</div>
+        <div class="pathway-step-content">Using the Human Outcomes Mapping Canvas, identify which domains of human functioning the product potentially influences</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 5 — Examine proximal and distal effects</div>
+        <div class="pathway-step-content">Using the Proximal vs. Distal Effects Map, trace both immediate and cumulative effects across identified domains</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 6 — Examine feedback loops</div>
+        <div class="pathway-step-content">Using the Feedback Loop Identification Guide, trace how user behavior feeds back into system adaptation</div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-header">Step 7 — Identify open research questions</div>
+        <div class="pathway-step-content">Document where evaluation reveals gaps in understanding that require further investigation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11 — EXAMPLE USE CASE
+════════════════════════════════════════════ -->
+<section id="usecase">
+  <div class="container">
+    <div class="section-num">11 — Example Application</div>
+    <h2>Illustrative Use Case</h2>
+
+    <p>The following example demonstrates how the Wellness Verified framework could be applied to a hypothetical social media content recommendation feature. This is an exploratory illustration — not an evaluative claim about any specific platform.</p>
+
+    <div class="note mb2">Hypothetical example for illustrative purposes only.</div>
+
+    <div class="card" style="border-color: rgba(91,184,169,0.3); margin-bottom: 1.2rem;">
+      <h3>Feature: Algorithmic Content Recommendation Feed</h3>
+    </div>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 1 — Interaction Environment</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>A social media platform's primary content feed, algorithmically curated based on behavioral engagement signals. Users encounter a personalized sequence of content — posts, images, videos, advertisements — selected and ranked by recommendation systems optimized for engagement.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 2 — Mechanisms Identified</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Variable reward reinforcement (unpredictable content quality sustains checking behavior) · Algorithmic curation (content selection based on predicted engagement) · Social comparison affordances (visible engagement metrics, curated self-presentation) · Passive consumption structure (low-friction scrolling without reciprocal interaction) · Personalization feedback loop (behavioral signals modify future content selection)</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 3 — Loop Structures</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Content Consumption Loop: content consumed → engagement signal → new content served → continued consumption. Variable Reward Loop: feed opened → unpredictable content quality → engagement maintained. Social Comparison Loop: social content observed → self-evaluation activated → continued observation. Information Refresh Loop: feed checked → new content may be present → checking reinforced on variable schedule.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 4 — Human Outcome Domains Potentially Influenced</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Attention patterns (fragmentation through variable reward and infinite scroll). Emotional experience (social comparison effects, mood-congruent content amplification). Social experience (passive consumption without reciprocal interaction; perceived relational quality). Knowledge exposure (algorithmically curated information environment). Perceived agency (opacity of recommendation mechanisms). Temporal experience (time perception during extended scrolling sessions). Behavioral patterns (habitual checking behavior).</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 5 — Proximal and Distal Effects</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Proximal: immediate attention capture, momentary social comparison, content-driven mood shifts. Distal: habitual checking patterns established over weeks, cumulative social comparison effects on self-evaluation, progressive narrowing of information exposure through personalization, gradual shifts in perceived agency and autonomous control.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 6 — Feedback Loops</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>User engagement behavior generates signals (dwell time, clicks, reactions, shares) → platform behavioral model updates → future content selection modified to maximize predicted engagement → user experience modified → new behavioral signals collected. This creates a co-adaptive system in which user and platform behavior evolve together over time.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Step 7 — Open Research Questions</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Does the variable reward structure of the feed produce measurable changes in sustained attention capacity over time? Do passive consumption patterns reduce perceived relational quality compared to active interaction patterns? Does personalization produce measurable epistemic narrowing across repeated use? How do different user populations (age, baseline mental health, usage patterns) respond differently to the same feed architecture?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12 — SYNTHESIS
+════════════════════════════════════════════ -->
+<section id="synthesis">
+  <div class="container">
+    <div class="section-num">12 — Synthesis</div>
+    <h2>Emerging Themes</h2>
+
+    <div class="synthesis-theme">
+      <p>Products shape human functioning through identifiable mechanisms that are predictable from existing behavioral science — yet these mechanisms are rarely made visible in product evaluation. The knowledge exists; the evaluation infrastructure does not.</p>
+    </div>
+
+    <div class="synthesis-theme">
+      <p>Human outcome effects operate across multiple domains simultaneously. A single design feature — an algorithmic recommendation system — may influence attention, emotional experience, social comparison, knowledge exposure, and perceived agency through distinct but interacting pathways. Single-domain evaluation systematically underrepresents product effects.</p>
+    </div>
+
+    <div class="synthesis-theme">
+      <p>The most consequential effects of product design on human functioning are often cumulative and emergent rather than immediate and intended. Evaluation frameworks that capture only interaction-window outcomes miss the effects most relevant to long-term human functioning.</p>
+    </div>
+
+    <div class="synthesis-theme">
+      <p>Making human outcomes visible does not require replacing existing evaluation criteria. It requires supplementing engagement, usability, and performance metrics with complementary evaluation lenses that surface additional dimensions of product impact.</p>
+    </div>
+
+    <div class="synthesis-theme">
+      <p>Interdisciplinary collaboration is not merely desirable but structurally necessary. No single discipline provides an adequate account of products' multi-domain human effects. Effective evaluation requires integration across behavioral science, cognitive psychology, environmental psychology, social psychology, and information science.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     13 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">13 — Key Insights</div>
+    <h2>Research Insights</h2>
+
+    <div class="note mb2">Framed as observed patterns across interdisciplinary literature and conceptual reasoning — not as validated empirical claims.</div>
+
+    <div class="insight-list">
+
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">The evaluation gap is structural, not informational</div>
+          <div class="insight-desc">The behavioral science knowledge relevant to understanding products' human effects already exists across multiple disciplines. The gap reflects the absence of evaluation infrastructure that translates this knowledge into forms applicable to product design and development processes.</div>
+          <span class="insight-tag">Evaluation Infrastructure</span>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Products are behavioral environments — and evaluation should account for this</div>
+          <div class="insight-desc">Every designed product constitutes a behavioral environment with affordances, reinforcement structures, defaults, and feedback loops that shape behavioral patterns. Evaluating products only as tools that serve primary functions misses their function as environments that shape behavior broadly.</div>
+          <span class="insight-tag">Behavioral Mechanisms</span>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Human outcomes span multiple domains that interact — single-domain evaluation is insufficient</div>
+          <div class="insight-desc">A product may simultaneously influence attention, emotional experience, social interaction, knowledge exposure, and perceived agency. Evaluating any single domain in isolation systematically underestimates the product's total influence on human functioning.</div>
+          <span class="insight-tag">Multi-Domain Effects</span>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Cumulative and emergent effects are more consequential than immediate effects</div>
+          <div class="insight-desc">The most significant effects of products on human functioning are not the immediate interaction-level outcomes that current evaluation captures but the cumulative patterns that emerge over weeks, months, and years of repeated interaction.</div>
+          <span class="insight-tag">Temporal Dynamics</span>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">Evaluation frameworks can support innovation rather than constrain it</div>
+          <div class="insight-desc">Making human outcomes visible creates opportunities for differentiation, trust-building, and long-term engagement quality. Products that can demonstrate positive effects on human functioning have a credibility advantage that engagement metrics alone cannot provide.</div>
+          <span class="insight-tag">Innovation Alignment</span>
+        </div>
+      </div>
+
+      <div class="insight-item">
+        <div class="insight-num">06</div>
+        <div class="insight-body">
+          <div class="insight-title">Interdisciplinary integration is structurally necessary for adequate evaluation</div>
+          <div class="insight-desc">No single discipline — not UX research, not behavioral science, not public health — provides an adequate account of products' multi-domain human effects. Effective evaluation requires structured integration across fields, which in turn requires shared conceptual vocabulary and collaborative infrastructure.</div>
+          <span class="insight-tag">Interdisciplinary Collaboration</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     14 — IMPLICATIONS FOR RESEARCH
+════════════════════════════════════════════ -->
+<section id="research-implications">
+  <div class="container">
+    <div class="section-num">14 — Implications for Research</div>
+    <h2>Research Implications</h2>
+
+    <div class="next-step-grid">
+      <div class="next-step-card">
+        <h4 class="accent4">Measurement Development</h4>
+        <p>Validated instruments for assessing human functioning effects across the ten outcome domains in product interaction contexts — enabling empirical evaluation that complements existing engagement analytics.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Longitudinal Outcome Studies</h4>
+        <p>Research designs that capture cumulative and emergent effects of product use on attention, emotional regulation, social experience, knowledge exposure, and perceived agency over extended time periods.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Cross-Domain Interaction Research</h4>
+        <p>Studies examining how effects across different human outcome domains interact — whether attention effects amplify emotional effects, whether social comparison mediates knowledge exposure effects.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Evaluation Framework Validation</h4>
+        <p>Empirical testing of whether structured evaluation approaches improve design teams' capacity to identify, understand, and address products' effects on human functioning.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     15 — IMPLICATIONS FOR DESIGN PRACTICE
+════════════════════════════════════════════ -->
+<section id="practice-implications">
+  <div class="container">
+    <div class="section-num">15 — Implications for Practice</div>
+    <h2>Design Practice Implications</h2>
+
+    <div class="next-step-grid">
+      <div class="next-step-card">
+        <h4 class="accent4">Supplementary Evaluation Integration</h4>
+        <p>Incorporating human outcome evaluation as a complementary layer alongside existing usability, engagement, and performance metrics — not replacing current evaluation but extending its scope.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Behavioral Science Literacy</h4>
+        <p>Building behavioral science reasoning capacity within design teams — enabling designers and researchers to identify the mechanisms through which their design decisions influence human functioning.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Transparent Outcome Communication</h4>
+        <p>Developing approaches for communicating products' human functioning effects to users, stakeholders, and governance bodies — supporting trust through transparency.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Agency-Preserving Design Principles</h4>
+        <p>Favoring design approaches that maintain user awareness, preserve perceived autonomy, and support informed engagement — particularly in adaptive and personalized systems.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     16 — COLLABORATION MODEL
+════════════════════════════════════════════ -->
+<section id="collaboration">
+  <div class="container">
+    <div class="section-num">16 — Collaboration Model</div>
+    <h2>Interdisciplinary Integration</h2>
+
+    <p>Effective evaluation of products' human effects requires collaboration across disciplines that typically operate independently. The following model describes how disciplinary knowledge might be integrated through the Wellness Verified framework.</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <h4>UX Research</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: User behavior data, interaction patterns, qualitative experience research, usability evaluation methods</p>
+      </div>
+      <div class="card">
+        <h4>Behavioral Science</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: Mechanism identification, reinforcement analysis, habit formation models, choice architecture evaluation</p>
+      </div>
+      <div class="card">
+        <h4>Data Science &amp; AI Research</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: Algorithmic behavior analysis, personalization dynamics, feedback loop modeling, system-level pattern detection</p>
+      </div>
+      <div class="card">
+        <h4>Public Health &amp; Social Science</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: Population-level outcome frameworks, social determinants models, long-term wellbeing measurement, epidemiological methods</p>
+      </div>
+      <div class="card">
+        <h4>Human-Computer Interaction</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: Interaction design knowledge, interface evaluation methods, attention and cognitive load research, accessibility frameworks</p>
+      </div>
+      <div class="card">
+        <h4>Product Design &amp; Engineering</h4>
+        <p style="font-size:0.82rem; margin:0;">Contributes: Design decision context, implementation constraints, organizational workflow knowledge, technical feasibility assessment</p>
+      </div>
+    </div>
+
+    <div class="note mt3">The Wellness Verified framework is designed as a shared conceptual language that makes collaboration across these disciplines more productive — providing common vocabulary and structured analytical tools.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     17 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">17 — Reflection</div>
+    <h2>Scope &amp; Limitations</h2>
+
+    <div class="limitation-grid">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">This is a conceptual framework — not a validated evaluation instrument. The framework organizes interdisciplinary knowledge into structured lenses but has not been empirically tested for its capacity to improve evaluation outcomes.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The ten-domain taxonomy may not capture all relevant dimensions of human functioning. Additional domains may emerge as the framework is applied and refined.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Terminological variation across disciplines remains a persistent challenge. The framework addresses this by providing anchoring definitions but cannot fully resolve cross-disciplinary semantic differences.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The framework has not yet been tested with practitioners. Its practical utility, workflow integration, and organizational feasibility require validation in real design and evaluation contexts.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The example use case is hypothetical and illustrative. It does not constitute an evaluation of any specific platform or product.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The framework is designed as a reasoning support tool, not as a compliance system. Its value depends on adoption by teams committed to incorporating human outcome consideration into their work.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">What This Project Demonstrates</h3>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>Research Capabilities</h4>
+        <ul class="bullet-list">
+          <li>Interdisciplinary synthesis across six or more disciplines</li>
+          <li>Conceptual framework construction from fragmented literature</li>
+          <li>Mechanism-level reasoning about environment-behavior relationships</li>
+          <li>Ten-domain human outcomes taxonomy development</li>
+          <li>Construct definition with operational precision</li>
+          <li>Multi-pathway evaluation modeling</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Applied Thinking</h4>
+        <ul class="bullet-list">
+          <li>Translation of research into structured evaluation tools</li>
+          <li>Toolkit design for practitioner use</li>
+          <li>Workflow integration reasoning</li>
+          <li>Balanced framing — neither advocacy nor dismissal</li>
+          <li>Cross-domain applicability from digital to physical environments</li>
+          <li>Systems-level thinking about product impact</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     18 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">18 — Next Steps</div>
+    <h2>Future Research Directions</h2>
+
+    <div class="next-step-grid">
+      <div class="next-step-card">
+        <h4 class="accent4">Practitioner Validation</h4>
+        <p>Testing the framework and toolkit with UX researchers, product designers, and behavioral scientists to evaluate legibility, practical utility, and workflow integration — refining based on applied feedback.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Applied Case Studies</h4>
+        <p>Applying the evaluation framework to specific product features across multiple categories — social platforms, productivity tools, learning environments, AI systems — to test coverage and analytical value.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Measurement Protocol Development</h4>
+        <p>Developing validated measurement approaches for assessing human outcome effects within each of the ten domains — enabling empirical follow-on research.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Interdisciplinary Collaboration Pilots</h4>
+        <p>Piloting structured collaboration workflows between UX research, behavioral science, data science, and product design teams — testing whether the framework improves cross-disciplinary communication and evaluation quality.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">Conceptual Research Artifact — Not a validated empirical study</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
