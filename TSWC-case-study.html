@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Shit We Carry — UX Research Case Study</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(200,169,110,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent  { border-color: rgba(200,169,110,0.4); color: var(--accent); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 520px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent);
+      background: rgba(200,169,110,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Concept Model ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 400px;
+      text-align: center; padding: 0.9rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--text);
+      position: relative; z-index: 1;
+    }
+    .model-node.highlight {
+      border-color: rgba(200,169,110,0.5);
+      background: rgba(200,169,110,0.06);
+      color: var(--accent);
+    }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Depth Ladder ── */
+    .depth-ladder { display: flex; flex-direction: column; gap: 0.4rem; }
+    .depth-rung {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .depth-rung:hover { border-color: rgba(200,169,110,0.3); background: var(--surface2); }
+    .depth-rung.active { border-color: rgba(200,169,110,0.5); background: rgba(200,169,110,0.05); }
+    .depth-level {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+      color: var(--text-dim); min-width: 20px;
+    }
+    .depth-bar-track {
+      flex: 0 0 100px; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden;
+    }
+    .depth-bar-fill { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.4s; }
+    .depth-label { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .depth-desc { font-size: 0.78rem; color: var(--text-muted); display: none; margin-top: 0.5rem; padding-left: calc(20px + 100px + 2rem); }
+    .depth-rung.active .depth-desc { display: block; }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(200,169,110,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 22px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Grid ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(200,169,110,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+
+    /* ── Principle Pills ── */
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill {
+      font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .principle-pill:hover { border-color: rgba(200,169,110,0.4); color: var(--accent); background: rgba(200,169,110,0.04); }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(200,169,110,0.1); color: var(--accent); border: 1px solid rgba(200,169,110,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Pathway Diagram ── */
+    .pathway {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 0; padding: 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .pathway-step {
+      text-align: center; padding: 0.7rem 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.8rem; color: var(--text);
+      min-width: 110px;
+    }
+    .pathway-step.env  { border-color: rgba(123,158,168,0.5); color: var(--accent2); }
+    .pathway-step.psy  { border-color: rgba(200,169,110,0.5); color: var(--accent); }
+    .pathway-step.out  { border-color: rgba(160,123,200,0.5); color: var(--accent3); }
+    .pathway-connector { font-size: 1.1rem; color: var(--text-dim); padding: 0 0.4rem; }
+
+    /* ── Limitation Tags ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Construct Map ── */
+    .construct-map {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    @media (max-width: 640px) { .construct-map { grid-template-columns: 1fr 1fr; } }
+    .construct-node {
+      padding: 0.6rem 0.8rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .construct-node.primary { border-color: rgba(200,169,110,0.4); color: var(--accent); background: rgba(200,169,110,0.04); }
+    .construct-node.secondary { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .construct-node.tertiary { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Synthesis Theme ── */
+    .synthesis-theme {
+      padding: 1rem 1.2rem; border-left: 3px solid var(--accent);
+      background: rgba(200,169,110,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">TSWC</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#framing">Framing</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">UX Research · Behavioral Science · Conceptual Exploration</div>
+    <h1 class="hero-title">The Shit<br/><em>We Carry</em></h1>
+    <p class="hero-subtitle">Designing interaction environments that support psychological safety and depth of interpersonal communication.</p>
+    <div class="hero-tags">
+      <span class="tag accent">UX Research</span>
+      <span class="tag accent2">Behavioral Science</span>
+      <span class="tag accent3">Interaction Design</span>
+      <span class="tag">Mental Health Adjacent</span>
+      <span class="tag">Ecological Psychology</span>
+      <span class="tag">Conceptual Research</span>
+    </div>
+    <div class="hero-statement">
+      Exploring how interaction structures influence perceived safety for meaningful disclosure — and what it means to design for emotional openness without engineering intimacy.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Explores</h2>
+    <p>This project investigates how interaction environments influence depth of interpersonal communication. Many individuals experiencing depression, distress, or internal struggle report feeling unable to share meaningful personal experiences despite frequent social contact — despite being surrounded by others.</p>
+    <p>TSWC maps the gap between <em>social presence</em> and <em>perceived psychological safety</em> for meaningful disclosure. It asks: what is it about how we structure interactions that makes depth feel available or unavailable?</p>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Areas of Inquiry</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>Psychological Safety</h4>
+        <p style="font-size:0.82rem; margin:0;">How does the felt sense of safety influence willingness to disclose emotional experience?</p>
+      </div>
+      <div class="card">
+        <h4>Depth Progression</h4>
+        <p style="font-size:0.82rem; margin:0;">How do interactions move (or fail to move) from surface exchange toward relational meaning?</p>
+      </div>
+      <div class="card">
+        <h4>Social Risk Perception</h4>
+        <p style="font-size:0.82rem; margin:0;">What signals within an environment raise or lower the perceived cost of self-disclosure?</p>
+      </div>
+      <div class="card">
+        <h4>Communication Pacing</h4>
+        <p style="font-size:0.82rem; margin:0;">How does the timing and structure of exchange shape comfort with emotional openness?</p>
+      </div>
+      <div class="card">
+        <h4>Affordances for Disclosure</h4>
+        <p style="font-size:0.82rem; margin:0;">What environmental affordances support gradual depth — or create friction that forecloses it?</p>
+      </div>
+      <div class="card">
+        <h4>Emotional Openness</h4>
+        <p style="font-size:0.82rem; margin:0;">What conditions make emotional openness feel accessible rather than socially risky?</p>
+      </div>
+    </div>
+
+    <div class="note mt3">This is an exploratory research project. It generates hypotheses and conceptual models rather than validated empirical claims.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     PROBLEM SPACE
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Problem Space</div>
+    <h2>The Core Tension</h2>
+
+    <p>People often participate in frequent social interaction while still feeling misunderstood, unseen, and unable to share meaningful experiences. Social presence — being with others — does not guarantee relational depth or the subjective sense of being known.</p>
+
+    <div class="card mt3" style="border-color: rgba(200,169,110,0.3);">
+      <div style="display:flex; gap:2rem; align-items:center; justify-content:center; padding: 0.5rem 0;">
+        <div style="text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.3rem;">👥</div>
+          <div style="font-size:0.8rem; color:var(--accent2); font-weight:600;">Social Interaction Frequency</div>
+        </div>
+        <div style="font-size:1.5rem; color:var(--text-dim);">≠</div>
+        <div style="text-align:center;">
+          <div style="font-size:1.8rem; margin-bottom:0.3rem;">🔒</div>
+          <div style="font-size:0.8rem; color:var(--accent); font-weight:600;">Perceived Relational Depth</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Hypothesis</h3>
+    <p>Interaction environments may unintentionally create <strong>behavioral friction</strong> for meaningful disclosure — not through malice or indifference, but through the absence of structural affordances that support depth progression.</p>
+
+    <h3 class="mt3 mb2">Contributing Factors — Friction Map</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Tentative factors identified through conceptual analysis and exploratory feedback.</p>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Unclear norms for depth progression — participants don't know what level of disclosure is "acceptable"</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">High perceived social risk — fear of judgment, rejection, or changing relational dynamics</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Absence of gradual disclosure affordances — no structure to support incremental vulnerability</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Identity signaling pressures — concern about how disclosure shapes perceived identity</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Lack of structured prompts for reflection — no external scaffolding to facilitate transition to depth</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">·</div>
+      <div class="friction-factor">Time constraints and context ambiguity — settings that don't signal space for emotional openness</div>
+      <div class="friction-level friction-low">Contextual</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Observed Phenomenon</h3>
+    <p>The central phenomenon: individuals experiencing depression, distress, or internal struggle often feel unable to share meaningful personal experiences despite being surrounded by others. This suggests that the availability of social contact is necessary but not sufficient — something about the <em>structure</em> of interaction itself determines whether depth becomes accessible.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CONCEPTUAL FRAMING
+════════════════════════════════════════════ -->
+<section id="framing">
+  <div class="container">
+    <div class="section-num">03 — Conceptual Framing</div>
+    <h2>Interaction Depth Dynamics</h2>
+
+    <p>TSWC frames depth of communication as an emergent property of interaction environment — not solely as a trait of individuals, but as something shaped by ecological conditions, affordances, feedback loops, and normative structures within a given interaction context.</p>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Mechanism Pathway</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.2rem;">The proposed causal pathway connecting environmental conditions to relational outcomes.</p>
+
+    <div class="pathway">
+      <div class="pathway-step env">Interaction<br/>Environment</div>
+      <div class="pathway-connector">→</div>
+      <div class="pathway-step psy">Perceived<br/>Psychological Safety</div>
+      <div class="pathway-connector">→</div>
+      <div class="pathway-step">Willingness<br/>to Engage</div>
+      <div class="pathway-connector">→</div>
+      <div class="pathway-step out">Depth of<br/>Communication</div>
+      <div class="pathway-connector">→</div>
+      <div class="pathway-step out">Relational<br/>Meaning Formation</div>
+    </div>
+
+    <div class="note mt2">This pathway is conceptual. Each node is mediated by individual differences, cultural context, relational history, and situational variables not captured here.</div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Key Distinction</h3>
+    <div class="grid-2 mt2">
+      <div class="card" style="border-color: rgba(123,158,168,0.35);">
+        <h4 style="color:var(--accent2);">Social Presence</h4>
+        <p style="font-size:0.85rem; margin:0;">Being physically or digitally co-located with others. Measurable by frequency, duration, and number of social contacts.</p>
+      </div>
+      <div class="card" style="border-color: rgba(200,169,110,0.35);">
+        <h4 style="color:var(--accent);">Emotional Openness</h4>
+        <p style="font-size:0.85rem; margin:0;">Subjective willingness to engage with and share emotionally meaningful experience. Dependent on perceived safety, not mere presence.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Interaction Depth Ladder</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Click any level to expand. Adapted from models of self-disclosure and social penetration theory.</p>
+
+    <div class="depth-ladder" id="depth-ladder">
+      <div class="depth-rung" data-level="1" data-pct="12" data-desc="Pleasantries, small talk, contextual commentary. Minimal self-exposure; governed by scripted social norms. High predictability, low relational risk.">
+        <span class="depth-level">L1</span>
+        <div class="depth-bar-track"><div class="depth-bar-fill" style="width:12%"></div></div>
+        <span class="depth-label">Surface Interaction</span>
+      </div>
+      <div class="depth-rung" data-level="2" data-pct="28" data-desc="Sharing personal preferences, opinions, and light judgments. Slightly higher relational exposure. Norms around taste and opinion expression vary by context.">
+        <span class="depth-level">L2</span>
+        <div class="depth-bar-track"><div class="depth-bar-fill" style="width:28%"></div></div>
+        <span class="depth-label">Personal Preferences</span>
+      </div>
+      <div class="depth-rung" data-level="3" data-pct="50" data-desc="Sharing personal narratives — past events, formative experiences, relational history. Requires moderate perceived safety. Social risk increases with proximity to emotional content.">
+        <span class="depth-level">L3</span>
+        <div class="depth-bar-track"><div class="depth-bar-fill" style="width:50%"></div></div>
+        <span class="depth-label">Personal Experiences</span>
+      </div>
+      <div class="depth-rung" data-level="4" data-pct="72" data-desc="Sharing feelings, fears, grief, longing, or confusion. Significant perceived vulnerability. Dependent on established psychological safety, perceived shared participation, and low identity-signaling pressure.">
+        <span class="depth-level">L4</span>
+        <div class="depth-bar-track"><div class="depth-bar-fill" style="width:72%"></div></div>
+        <span class="depth-label">Emotional Experiences</span>
+      </div>
+      <div class="depth-rung" data-level="5" data-pct="95" data-desc="Disclosure that implicates core self-concept, values, or identity. Highest perceived vulnerability. Requires strong psychological safety, minimal social risk, and high perceived shared participation. Often unexpected when it occurs.">
+        <span class="depth-level">L5</span>
+        <div class="depth-bar-track"><div class="depth-bar-fill" style="width:95%"></div></div>
+        <span class="depth-label">Identity-Relevant Experiences</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Psychological Safety — Construct Map</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Contributing constructs and their ecological layers.</p>
+
+    <div class="construct-map">
+      <div class="construct-node primary">Perceived Psychological Safety</div>
+      <div class="construct-node secondary">Perceived Social Risk</div>
+      <div class="construct-node secondary">Identity Signaling Concerns</div>
+      <div class="construct-node primary">Environmental Affordances</div>
+      <div class="construct-node">Interaction Norms</div>
+      <div class="construct-node">Cognitive Load</div>
+      <div class="construct-node tertiary">Self-Disclosure Comfort</div>
+      <div class="construct-node">Perceived Vulnerability</div>
+      <div class="construct-node secondary">Shared Participation Cues</div>
+      <div class="construct-node">Depth Ambiguity</div>
+      <div class="construct-node tertiary">Reinforcement Structures</div>
+      <div class="construct-node">Proximal Context</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RESEARCH QUESTIONS
+════════════════════════════════════════════ -->
+<section id="rqs">
+  <div class="container">
+    <div class="section-num">04 — Research Questions</div>
+    <h2>What We're Asking</h2>
+
+    <div class="rq-primary">
+      <div class="label">Primary Research Question</div>
+      <div class="question">How do interaction structures influence willingness to engage in meaningful disclosure?</div>
+    </div>
+
+    <div class="rq-secondary">
+      <div class="rq-item">
+        <span class="rq-num">SQ1</span>
+        <span class="rq-text">What environmental cues influence perceived psychological safety within a given interaction context?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ2</span>
+        <span class="rq-text">What types of prompts — structural, conversational, or reflective — support progression toward deeper interaction?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ3</span>
+        <span class="rq-text">What types of interaction pacing reduce perceived social risk during depth transitions?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ4</span>
+        <span class="rq-text">How do individuals interpret and internalize norms for emotional openness within unfamiliar interaction environments?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ5</span>
+        <span class="rq-text">What interaction structures support gradual depth progression without requiring explicit negotiation of vulnerability thresholds?</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     METHODOLOGY
+════════════════════════════════════════════ -->
+<section id="method">
+  <div class="container">
+    <div class="section-num">05 — Methodology</div>
+    <h2>Research Approach</h2>
+
+    <p>TSWC employs an exploratory mixed-method approach. Given the early conceptual stage of this inquiry, the research prioritizes <strong>hypothesis generation</strong> over hypothesis testing — using qualitative methods to surface patterns that may warrant future structured investigation.</p>
+
+    <div class="note mb2">Sample size is limited. Data is exploratory and context-specific. Claims are tentative and directional, not causal.</div>
+
+    <div class="grid-2 mt3">
+      <div class="method-card">
+        <div class="method-icon">💬</div>
+        <div class="method-name">Semi-Structured Conversations</div>
+        <div class="method-desc">Open-ended participant interactions within designed interaction environment. Naturalistic depth observations.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">✏️</div>
+        <div class="method-name">Reflection Prompts</div>
+        <div class="method-desc">Structured written prompts designed to support gradual self-reflection and disclosure at participant-controlled depth.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">👁</div>
+        <div class="method-name">Observational Feedback</div>
+        <div class="method-desc">Informal observational notes on interaction dynamics, pacing, and depth transitions within the environment.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📋</div>
+        <div class="method-name">Open-Ended Surveys</div>
+        <div class="method-desc">Pre- and post-event instruments measuring perceived safety, depth, comfort, and resonance.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Measured Constructs</h3>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Pre-Event Constructs</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Baseline comfort with sharing personal experiences in social settings · Perceived social risk in unfamiliar interaction contexts · Habitual interaction depth in everyday social life · Expectations for interaction depth in this environment · Anticipated identity-signaling concerns</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Post-Event Constructs</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Perceived psychological safety within the interaction environment · Willingness to engage in deeper conversation during the session · Perceived emotional resonance of interactions · Perceived social risk experienced during depth transitions · Surprise at depth relative to typical social settings · Attribution of depth to structural prompts vs. interpersonal factors</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Data Sources</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Pre-event feedback responses · Post-event feedback responses · Informal observational field notes · Participant written reflections · Interaction depth self-report from post-event survey</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">06 — Research Artifacts</div>
+    <h2>Artifact Suite</h2>
+    <p>The following artifacts represent the analytical outputs of this research phase. Several are in development; placeholders indicate direction for future iteration.</p>
+
+    <div class="grid-2 mt3">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⬡</div>
+        <div class="artifact-name">Interaction Depth Model</div>
+        <div class="artifact-note">Five-layer ecological diagram mapping depth levels to environmental affordances and perceived safety thresholds</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">→</div>
+        <div class="artifact-name">Mechanism Pathway Diagram</div>
+        <div class="artifact-note">Causal pathway from environmental conditions through perceived safety to depth outcomes and relational meaning</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">◉</div>
+        <div class="artifact-name">Psychological Safety Construct Map</div>
+        <div class="artifact-note">Network diagram of contributing constructs, ecological layers, and bidirectional feedback loops</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⊘</div>
+        <div class="artifact-name">Interaction Friction Map</div>
+        <div class="artifact-note">Annotated model of friction points across the depth progression pathway with severity ratings</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">≡</div>
+        <div class="artifact-name">Conversation Prompt Typology</div>
+        <div class="artifact-note">Classification of prompt structures by depth scaffolding function, pacing properties, and perceived safety impact</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">◈</div>
+        <div class="artifact-name">Insight Clustering Diagram</div>
+        <div class="artifact-note">Affinity-structured clustering of participant feedback patterns mapped to conceptual constructs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SYNTHESIS
+════════════════════════════════════════════ -->
+<section id="synthesis">
+  <div class="container">
+    <div class="section-num">07 — Synthesis</div>
+    <h2>Emergent Patterns</h2>
+
+    <p>The following patterns emerged from exploratory analysis of pre- and post-event feedback and observational notes. These are <em>tentative directional signals</em> — not statistically validated findings.</p>
+
+    <div class="mt3">
+      <div class="synthesis-theme">
+        <p>Participants reported appreciation for structured reflection prompts, suggesting that external scaffolding may reduce the cognitive load of initiating emotional disclosure.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Participants indicated surprise at the depth of conversation relative to typical social settings — suggesting that the interaction environment shifted their expectation baseline.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Structured prompts appeared to reduce uncertainty about conversational norms, potentially lowering the perceived social risk of depth transitions.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Participants reported feeling more comfortable sharing when progression felt gradual — consistent with social penetration theory's predictions around incremental reciprocal disclosure.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Some participants indicated difficulty initiating depth without external structure — suggesting that initiation friction, not willingness, may be the primary barrier to meaningful disclosure.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Participants described meaningful conversations emerging unexpectedly — pointing to threshold effects in depth progression where small structural nudges may produce disproportionate shifts in perceived depth.</p>
+      </div>
+    </div>
+
+    <div class="card mt3" style="border-color:rgba(200,169,110,0.3); background: rgba(200,169,110,0.04);">
+      <h4>Emerging Pattern</h4>
+      <p style="font-size:0.9rem; color:var(--text); margin:0;">Structured interaction environments may reduce ambiguity around acceptable depth levels — functioning as a normative signal that makes emotional disclosure feel more contextually appropriate, without requiring individuals to negotiate this explicitly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">08 — Key Insights</div>
+    <h2>Tentative Patterns</h2>
+    <p>These are directional hypotheses generated from exploratory data. Each insight points toward a relationship worth investigating — not a claim about causal mechanism.</p>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">I-01</div>
+        <div class="insight-body">
+          <div class="insight-title">Interaction ambiguity increases perceived social risk</div>
+          <div class="insight-desc">When participants are uncertain about what depth level is normatively appropriate, they default to surface interaction. Ambiguity functions as a proximal environmental constraint on depth progression.</div>
+          <span class="insight-tag">Environmental Constraint</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-02</div>
+        <div class="insight-body">
+          <div class="insight-title">Structured prompts may reduce cognitive load associated with initiating meaningful conversation</div>
+          <div class="insight-desc">External scaffolding appears to offload the cognitive and social effort of deciding to initiate depth — reducing the initiation friction that keeps interaction at surface levels.</div>
+          <span class="insight-tag">Cognitive Load</span> <span class="insight-tag">Affordances</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-03</div>
+        <div class="insight-body">
+          <div class="insight-title">Gradual depth progression may increase willingness to engage in emotional disclosure</div>
+          <div class="insight-desc">Incremental depth scaffolding — movement through levels rather than sudden jumps — appears to preserve perceived safety while enabling deeper engagement. Consistent with social penetration theory.</div>
+          <span class="insight-tag">Depth Progression</span> <span class="insight-tag">Feedback Loops</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-04</div>
+        <div class="insight-body">
+          <div class="insight-title">Perceived shared participation reduces perceived vulnerability</div>
+          <div class="insight-desc">When individuals believe they are participating in a shared experience — that others are also disclosing, also at depth — their sense of being uniquely exposed decreases. Vulnerability is normalized by symmetry.</div>
+          <span class="insight-tag">Perceived Vulnerability</span> <span class="insight-tag">Social Norms</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-05</div>
+        <div class="insight-body">
+          <div class="insight-title">Interaction pacing influences perceived safety</div>
+          <div class="insight-desc">The pace at which an interaction moves through depth levels appears to matter independently of content. Rushed depth feels unsafe; gradual depth feels natural. Pacing may function as a distal cue for environmental safety.</div>
+          <span class="insight-tag">Interaction Pacing</span> <span class="insight-tag">Proximal vs. Distal Influences</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-06</div>
+        <div class="insight-body">
+          <div class="insight-title">Identity signaling concerns influence willingness to disclose</div>
+          <div class="insight-desc">Concern about how disclosure shapes perceived identity — how one will be seen — functions as a higher-order barrier that operates above individual interactions. Interaction design that reduces identity-signaling pressure may increase depth accessibility.</div>
+          <span class="insight-tag">Identity Signaling</span> <span class="insight-tag">Self-Disclosure</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CONCEPT DIRECTION
+════════════════════════════════════════════ -->
+<section id="concept">
+  <div class="container">
+    <div class="section-num">09 — Concept Direction</div>
+    <h2>TSWC as Interaction Scaffold</h2>
+
+    <p>The TSWC concept is framed as an <strong>interaction scaffold</strong> — a structured environment designed not to engineer intimacy, but to reduce the environmental friction that prevents it from emerging naturally. The goal is to make depth accessible without making it mandatory.</p>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Core Mechanism</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Reduce</h4>
+        <p style="font-size:0.85rem; margin:0;">Uncertainty around depth norms · Perceived vulnerability exposure · Initiation friction · Identity-signaling pressure</p>
+      </div>
+      <div class="card">
+        <h4>Create</h4>
+        <p style="font-size:0.85rem; margin:0;">Structured reflection entry points · Gradual depth progression pathways · Shared participation cues · Normative signals for emotional openness</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Design Direction Principles</h3>
+    <div class="principle-grid mt2">
+      <div class="principle-pill">Gradual depth scaffolding</div>
+      <div class="principle-pill">Shared participation cues</div>
+      <div class="principle-pill">Reduced initiation friction</div>
+      <div class="principle-pill">Structured reflection prompts</div>
+      <div class="principle-pill">Interaction pacing support</div>
+      <div class="principle-pill">Optional participation autonomy</div>
+      <div class="principle-pill">Low identity-signaling pressure</div>
+      <div class="principle-pill">Normative depth signaling</div>
+      <div class="principle-pill">Incremental reciprocity</div>
+      <div class="principle-pill">Contextual safety cues</div>
+    </div>
+
+    <div class="note mt3">These principles are directional — derived from conceptual analysis and exploratory feedback. They require empirical validation before informing design decisions with high-stakes populations.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     DESIGN IMPLICATIONS
+════════════════════════════════════════════ -->
+<section id="implications">
+  <div class="container">
+    <div class="section-num">10 — Design Implications</div>
+    <h2>Future Directions</h2>
+
+    <p>These implications point toward design domains worth exploring — not prescriptions. Each represents a hypothesis about where designed structure might productively intersect with natural interaction dynamics.</p>
+
+    <div class="expandable open mt3">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Interaction prompts as depth scaffolds</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Conversation prompts may function as normative scaffolds — not by directing content, but by signaling that depth is contextually appropriate. A typology of prompt structures (reflective, experiential, identity-adjacent) could support differentiated depth scaffolding depending on interaction context and participant comfort levels.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Mechanisms for signaling consent for deeper conversation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Depth transitions often require implicit negotiation that participants may not have the tools to navigate. Designing for legible, low-friction consent signals — opt-in depth indicators, shared pacing cues — could reduce the social risk of initiating depth transitions without requiring explicit conversation about vulnerability.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Environmental cues supporting reflection</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Physical and spatial affordances may signal whether a context supports depth or forecloses it. Environmental design — lighting, acoustic properties, spatial arrangement, time structure — may function as distal influences on perceived psychological safety, operating before any interpersonal exchange occurs.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Optional pathways for engagement depth</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Not all participants will want the same depth. Designing for variability in comfort levels — creating optional depth pathways rather than uniform depth expectations — may expand access without increasing pressure. Autonomy-preserving structures may paradoxically increase willingness to engage.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Designing for variability in comfort levels</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Interaction environments that assume uniform comfort with depth may inadvertently exclude participants with higher perceived social risk or identity-signaling concerns. Designing for range — not lowest common denominator — means creating structures that honor different entry points without signaling that any level of engagement is insufficient.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Reducing pressure for immediate disclosure</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Temporal pressure may be an underexamined friction factor. Interaction environments with unclear time horizons, or that implicitly pressure rapid disclosure, may increase social risk rather than reduce it. Designing for pacing — allowing depth to emerge rather than scheduling it — may produce more durable psychological safety.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">11 — Reflection</div>
+    <h2>Limitations & Posture</h2>
+
+    <p>This project generates hypotheses rather than validated claims. The following limitations are significant and should be carried forward into any future research iteration.</p>
+
+    <div class="limitation-grid mt3">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Small exploratory dataset.</strong> Sample size is limited and insufficient for statistical inference. Patterns are directional signals, not empirically supported findings.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Limited longitudinal data.</strong> Without longitudinal follow-up, it is not possible to assess whether perceived depth in the interaction environment corresponds to durable relational change or simply a contextual shift in self-report.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Context-specific interaction environment.</strong> Findings are grounded in a specific designed interaction context. Generalizability to naturalistic social settings, digital environments, or cross-cultural contexts is untested.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Self-selection bias.</strong> Participants who chose to engage with this environment may have systematically different baseline comfort with emotional disclosure than the general population.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Depth perception is subjective.</strong> Self-reported interaction depth is susceptible to social desirability bias, recency effects, and individual differences in what "depth" means experientially.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Interaction dynamics vary across cultures.</strong> Norms around self-disclosure, emotional expression, and relational depth are culturally variable. This research does not account for cross-cultural variation in these constructs.</div>
+      </div>
+    </div>
+
+    <div class="card mt4" style="border-color: rgba(160,123,200,0.3); background: rgba(160,123,200,0.03);">
+      <h4 style="color:var(--accent3);">Research Posture</h4>
+      <p style="font-size:0.9rem; color:var(--text); margin:0;">TSWC is offered as a research exploration — an attempt to think carefully about a real phenomenon using the tools of behavioral science, interaction design, and ecological psychology. It does not claim to have solved the problem of emotional isolation, or to have identified a definitive intervention. It claims to have asked a question worth asking, and to have begun building the conceptual scaffolding needed to ask it more precisely.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">12 — Next Steps</div>
+    <h2>Future Research Directions</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4>Longitudinal Depth Studies</h4>
+        <p>Track interaction depth and perceived psychological safety across multiple sessions to assess whether structured environments produce durable shifts in disclosure behavior or contextually bounded ones.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Experimental Prompt Structures</h4>
+        <p>Systematically compare prompt types — reflective, experiential, identity-adjacent — across controlled interaction conditions to assess differential effects on perceived safety and depth progression.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Measurement Development</h4>
+        <p>Develop and validate a psychometric instrument for perceived conversational safety — capturing the construct with greater precision than single-item self-report.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Cross-Context Comparison</h4>
+        <p>Replicate the interaction design across distinct social contexts (professional, community, digital) to assess how ecological layer affects depth dynamics.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Digital Environment Integration</h4>
+        <p>Explore how depth scaffolding principles translate to asynchronous and synchronous digital communication — where environmental affordances, pacing, and social risk function differently.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Identity Signaling Studies</h4>
+        <p>Investigate the role of identity-signaling concerns more directly — examining how self-concept threat mediates the relationship between perceived social risk and disclosure willingness.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>The Shit We Carry — UX Research Case Study · Behavioral Science · Interaction Design · 2024–2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">An exploratory research project. Generating hypotheses, not prescriptions.</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Depth Ladder ──
+  const rungs = document.querySelectorAll('.depth-rung');
+  rungs.forEach(rung => {
+    rung.addEventListener('click', () => {
+      const wasActive = rung.classList.contains('active');
+      rungs.forEach(r => {
+        r.classList.remove('active');
+        const desc = r.querySelector('.depth-desc');
+        if (desc) desc.style.display = 'none';
+      });
+      if (!wasActive) {
+        rung.classList.add('active');
+        let desc = rung.querySelector('.depth-desc');
+        if (!desc) {
+          desc = document.createElement('div');
+          desc.className = 'depth-desc';
+          desc.textContent = rung.dataset.desc;
+          rung.appendChild(desc);
+        }
+        desc.style.display = 'block';
+      }
+    });
+  });
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
