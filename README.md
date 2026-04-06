@@ -6,7 +6,7 @@ The projects in this repository translate behavioral science, systems thinking, 
 
 These artifacts demonstrate how psychological, social, environmental, and technological influences interact to shape behavior, motivation, trust, engagement, and long-term wellbeing.
 
-Rather than focusing only on isolated user interactions, this body of work explores how design choices influence patterns of behavior over time — including how systems can unintentionally reinforce stress, friction, disengagement, or maladaptive coping, as well as how they can support resilience, agency, and sustainable behavior change.
+Rather than focusing only on isolated user interactions, this body of work explores how design choices influence patterns of behavior over time, including how systems can unintentionally reinforce stress, friction, disengagement, or maladaptive coping, as well as how they can support resilience, agency, and sustainable behavior change.
 
 ---
 
