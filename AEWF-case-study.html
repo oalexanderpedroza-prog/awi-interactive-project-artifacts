@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Applied Ecological Wellness Framework — UX Research Case Study</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #7bc898;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 65% 55% at 65% 35%, rgba(123,200,152,0.06) 0%, transparent 65%),
+                  radial-gradient(ellipse 45% 50% at 15% 75%, rgba(123,158,168,0.05) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 620px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.g  { border-color: rgba(123,200,152,0.4);  color: var(--accent4); }
+    .tag.b  { border-color: rgba(123,158,168,0.4);  color: var(--accent2); }
+    .tag.p  { border-color: rgba(160,123,200,0.4);  color: var(--accent3); }
+    .tag.y  { border-color: rgba(200,169,110,0.4);  color: var(--accent); }
+    .hero-statement {
+      max-width: 520px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(123,200,152,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num { font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem; }
+
+    /* ── Cards & Grids ── */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+    .card + .card { margin-top: 1rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Ecological Layers — Interactive ── */
+    .eco-system {
+      position: relative; display: flex; flex-direction: column; gap: 0;
+      border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    }
+    .eco-layer {
+      display: flex; align-items: stretch; cursor: pointer;
+      border-bottom: 1px solid var(--border); transition: background 0.2s;
+    }
+    .eco-layer:last-child { border-bottom: none; }
+    .eco-layer:hover { background: var(--surface2); }
+    .eco-layer.active { background: var(--surface2); }
+    .eco-swatch {
+      width: 6px; flex-shrink: 0;
+    }
+    .eco-header { flex: 1; padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.2rem; }
+    .eco-layer-tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .eco-layer-name { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .eco-layer-short { font-size: 0.78rem; color: var(--text-muted); }
+    .eco-expand-icon { padding: 1rem; display: flex; align-items: center; color: var(--text-dim); font-size: 0.85rem; transition: transform 0.25s; flex-shrink: 0; }
+    .eco-layer.active .eco-expand-icon { transform: rotate(45deg); }
+    .eco-detail {
+      display: none; padding: 0 1.2rem 1rem 1.2rem; border-top: 1px solid var(--border);
+    }
+    .eco-layer.active .eco-detail { display: block; }
+    .eco-components { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; margin-top: 0.6rem; }
+    .eco-comp-pill { font-size: 0.72rem; padding: 0.2rem 0.6rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-muted); }
+    .eco-mechanism { font-size: 0.78rem; color: var(--text-muted); }
+    .eco-mechanism strong { color: var(--text-dim); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* swatches by layer */
+    .sw-0 { background: #7bc898; }
+    .sw-1 { background: #7b9ea8; }
+    .sw-2 { background: #c8a96e; }
+    .sw-3 { background: #a07bc8; }
+    .sw-4 { background: #c87b7b; }
+    .sw-5 { background: #8888aa; }
+
+    .lt-0 { color: #7bc898; }
+    .lt-1 { color: #7b9ea8; }
+    .lt-2 { color: #c8a96e; }
+    .lt-3 { color: #a07bc8; }
+    .lt-4 { color: #c87b7b; }
+    .lt-5 { color: #8888aa; }
+
+    /* ── Pathway Diagram ── */
+    .pathway-v {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .pv-node {
+      width: 100%; max-width: 420px; text-align: center;
+      padding: 0.8rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      font-size: 0.88rem; color: var(--text);
+    }
+    .pv-node.env  { border-color: rgba(123,158,168,0.45); color: var(--accent2); }
+    .pv-node.mech { border-color: rgba(200,169,110,0.45); color: var(--accent); }
+    .pv-node.out  { border-color: rgba(123,200,152,0.45); color: var(--accent4); }
+    .pv-node.time { border-color: rgba(136,136,170,0.45); color: #8888aa; }
+    .pv-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      height: 28px; position: relative;
+    }
+    .pv-arrow::before {
+      content: ''; width: 1px; height: 100%; background: var(--border);
+    }
+    .pv-arrow::after {
+      content: '↓'; position: absolute; bottom: -4px; font-size: 0.8rem;
+      color: var(--text-dim); background: var(--bg); padding: 0 3px;
+    }
+    .pv-arrow.bidir::after { content: '↕'; color: var(--accent4); }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(123,200,152,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item { display: flex; gap: 1rem; align-items: flex-start; padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 26px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Cards ── */
+    .method-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+    .method-instruments { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.3rem; font-style: italic; }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+    .artifact-badge {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 0.15rem 0.5rem; border-radius: 99px; margin-top: 0.3rem;
+    }
+    .badge-flagship { background: rgba(200,169,110,0.12); color: var(--accent); border: 1px solid rgba(200,169,110,0.2); }
+    .badge-synthesis { background: rgba(123,200,152,0.1); color: var(--accent4); border: 1px solid rgba(123,200,152,0.2); }
+    .badge-analytic { background: rgba(160,123,200,0.1); color: var(--accent3); border: 1px solid rgba(160,123,200,0.2); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item { display: flex; gap: 1.2rem; align-items: flex-start; padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); transition: border-color 0.2s; }
+    .insight-item:hover { border-color: rgba(123,200,152,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; margin-right: 0.3rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.2rem; background: var(--surface); cursor: pointer; transition: background 0.2s; }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+
+    /* ── Wellbeing Domains ── */
+    .domain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+    @media (max-width: 640px) { .domain-grid { grid-template-columns: 1fr 1fr; } }
+    .domain-card {
+      padding: 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); cursor: pointer; transition: all 0.2s;
+    }
+    .domain-card:hover { background: var(--surface2); }
+    .domain-card.active { border-color: rgba(123,200,152,0.4); background: rgba(123,200,152,0.04); }
+    .domain-icon { font-size: 1.3rem; margin-bottom: 0.3rem; }
+    .domain-name { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .domain-sub { font-size: 0.72rem; color: var(--text-muted); display: none; }
+    .domain-card.active .domain-sub { display: block; }
+
+    /* ── Mechanism Table ── */
+    .mech-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    .mech-table th { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); text-align: left; background: var(--surface2); }
+    .mech-table td { padding: 0.7rem 0.8rem; border-bottom: 1px solid rgba(46,46,54,0.5); color: var(--text-muted); vertical-align: top; }
+    .mech-table tr:last-child td { border-bottom: none; }
+    .mech-table tr:hover td { background: var(--surface2); }
+    .mech-layer-cell { color: var(--text); font-weight: 500; white-space: nowrap; }
+
+    /* ── Synthesis ── */
+    .synthesis-theme { padding: 1rem 1.2rem; border-left: 3px solid var(--accent4); background: rgba(123,200,152,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0; }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Feedback Loop Visual ── */
+    .feedback-loop {
+      padding: 2rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .loop-track {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0;
+    }
+    .loop-node {
+      text-align: center; padding: 0.6rem 0.9rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.78rem; color: var(--text);
+      min-width: 90px; flex-shrink: 0;
+    }
+    .loop-node.trigger { border-color: rgba(123,158,168,0.5); color: var(--accent2); }
+    .loop-node.behavior { border-color: rgba(200,169,110,0.5); color: var(--accent); }
+    .loop-node.outcome { border-color: rgba(123,200,152,0.5); color: var(--accent4); }
+    .loop-node.reinforce { border-color: rgba(160,123,200,0.5); color: var(--accent3); }
+    .loop-arrow { font-size: 0.9rem; color: var(--text-dim); padding: 0 0.3rem; }
+    .loop-return {
+      text-align: center; margin-top: 0.8rem;
+      font-size: 0.72rem; color: var(--text-dim); letter-spacing: 0.06em;
+      padding: 0.4rem; border: 1px dashed rgba(46,46,54,0.8); border-radius: 4px;
+    }
+    .loop-note { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.8rem; text-align: center; }
+
+    /* ── Proximal/Distal comparison ── */
+    .pd-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }
+    .pd-col { background: var(--surface); padding: 1.2rem; }
+    .pd-col h4 { margin-bottom: 0.8rem; }
+    .pd-row { font-size: 0.82rem; color: var(--text-muted); padding: 0.35rem 0; border-bottom: 1px solid rgba(46,46,54,0.4); }
+    .pd-row:last-child { border-bottom: none; }
+
+    /* ── Limitations ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item { display: flex; gap: 1rem; align-items: flex-start; padding: 0.8rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card { padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Framework Architecture ── */
+    .framework-arch {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .arch-row {
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .arch-box {
+      flex: 1; padding: 0.6rem 0.9rem; border-radius: 6px; border: 1px solid var(--border);
+      font-size: 0.82rem; text-align: center; background: var(--surface);
+    }
+    .arch-connector { font-size: 0.85rem; color: var(--text-dim); min-width: 20px; text-align: center; }
+    .arch-bidir { font-size: 0.85rem; color: var(--accent4); min-width: 20px; text-align: center; }
+
+    /* ── Construct Cluster ── */
+    .cluster-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+    @media (max-width: 640px) { .cluster-grid { grid-template-columns: 1fr 1fr; } }
+    .cluster-node { padding: 0.5rem 0.6rem; text-align: center; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 0.72rem; color: var(--text-muted); }
+    .cluster-node.env-c { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .cluster-node.mech-c { border-color: rgba(200,169,110,0.3); color: var(--accent); }
+    .cluster-node.out-c { border-color: rgba(123,200,152,0.3); color: var(--accent4); }
+    .cluster-node.sys-c { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Footer ── */
+    footer { padding: 3rem 0; text-align: center; border-top: 1px solid var(--border); }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Progress Bar ── */
+    #progress-bar { position: fixed; top: 0; left: 0; height: 2px; width: 0%; background: var(--accent4); z-index: 200; transition: width 0.1s linear; }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; } .mt2 { margin-top: 1rem; } .mt3 { margin-top: 1.5rem; } .mt4 { margin-top: 2rem; }
+    .mb1 { margin-bottom: 0.5rem; } .mb2 { margin-bottom: 1rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note { font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem; border-left: 2px solid var(--border); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; font-style: italic; }
+    .highlight-box { padding: 1.2rem 1.5rem; border: 1px solid rgba(123,200,152,0.3); background: rgba(123,200,152,0.03); border-radius: var(--radius); }
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill { font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); transition: all 0.2s; }
+    .principle-pill:hover { border-color: rgba(123,200,152,0.4); color: var(--accent4); background: rgba(123,200,152,0.04); }
+
+    /* ── Interdisciplinary Sources ── */
+    .source-row { display: flex; gap: 1rem; align-items: flex-start; padding: 0.75rem 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; }
+    .source-field { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; color: var(--accent2); min-width: 140px; padding-top: 1px; }
+    .source-contribution { font-size: 0.82rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">AEWF</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#framing">Framing</a></li>
+    <li><a href="#layers">Layers</a></li>
+    <li><a href="#method">Method</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">UX Research · Behavioral Science · Systems Thinking · Ecological Psychology</div>
+    <h1 class="hero-title">Applied Ecological<br/><em>Wellness Framework</em></h1>
+    <p class="hero-subtitle">Modeling how environmental layers shape behavior, experience, and wellbeing trajectories across time.</p>
+    <div class="hero-tags">
+      <span class="tag g">UX Research</span>
+      <span class="tag y">Behavioral Science</span>
+      <span class="tag b">Systems Thinking</span>
+      <span class="tag p">Ecological Psychology</span>
+      <span class="tag">Conceptual Research</span>
+      <span class="tag">Public Health</span>
+      <span class="tag">Environmental Psychology</span>
+    </div>
+    <div class="hero-statement">
+      Understanding how environments shape patterns of behavior and human functioning across interacting ecological layers — and what it means to design with that understanding.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Framework Does</h2>
+
+    <p>Human wellbeing emerges from dynamic interaction between individuals and their environments. Across disciplines — behavioral science, ecological psychology, public health, systems theory, human factors — research consistently demonstrates that behavior and experience are shaped not only by internal characteristics, but by environmental conditions operating across multiple ecological levels simultaneously.</p>
+
+    <p>However, insights about environmental influence remain fragmented across fields with inconsistent terminology, incompatible conceptual structures, and limited cross-disciplinary synthesis. The Applied Ecological Wellness Framework (AEWF) addresses this by synthesizing interdisciplinary evidence into a coherent multi-layer ecological model describing how environmental influences interact dynamically across time to produce wellbeing trajectories.</p>
+
+    <div class="divider"></div>
+
+    <div class="highlight-box">
+      <h4 style="color:var(--accent4); margin-bottom:0.5rem;">Core Argument</h4>
+      <p style="font-size:0.9rem; color:var(--text); margin:0;">Wellbeing is not primarily an individual trait. It is a system-level outcome shaped by proximal and distal environmental conditions operating across multiple ecological layers — conditions that are often invisible to those experiencing their effects, and underspecified in the design processes that create them.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Theoretical Foundations</h3>
+    <div class="source-row">
+      <span class="source-field">Ecological Systems Theory</span>
+      <span class="source-contribution">Bronfenbrenner (1979) — nested environmental layers (micro, meso, exo, macro, chronosystem) and their bidirectional interactions with human development</span>
+    </div>
+    <div class="source-row">
+      <span class="source-field">Behavioral Economics</span>
+      <span class="source-contribution">Environmental defaults, choice architecture, reinforcement structures, and the systematic influence of contextual conditions on decision-making and behavior</span>
+    </div>
+    <div class="source-row">
+      <span class="source-field">Environmental Psychology</span>
+      <span class="source-contribution">Environment-behavior relationships, affordances, attention restoration theory, restorative environments, spatial cognition</span>
+    </div>
+    <div class="source-row">
+      <span class="source-field">Public Health</span>
+      <span class="source-contribution">Social determinants of health, upstream vs. downstream intervention logic, population-level environmental risk and protective factors</span>
+    </div>
+    <div class="source-row">
+      <span class="source-field">Systems Theory</span>
+      <span class="source-contribution">Feedback loops, emergent properties, leverage points, system dynamics, non-linear interaction effects across system levels</span>
+    </div>
+
+    <div class="note mt3">AEWF is a conceptual research framework. It is intended as an organizing structure for research reasoning — not a predictive model or intervention protocol.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     PROBLEM SPACE
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Problem Space</div>
+    <h2>The Structural Gap</h2>
+
+    <p>Research examining human wellbeing is distributed across multiple disciplines with inconsistent terminology and limited integrative conceptual structure. What ecology calls an "affordance" may be what behavioral economics calls a "default." What public health names a "social determinant" may be what human factors names an "environmental constraint." The same mechanisms get rediscovered across fields without recognition of convergence.</p>
+
+    <div class="grid-2 mt3">
+      <div class="card" style="border-color:rgba(123,158,168,0.35);">
+        <h4 style="color:var(--accent2);">What Research Knows</h4>
+        <p style="font-size:0.85rem; margin:0;">Environmental conditions at multiple ecological layers systematically influence behavior, cognition, emotional experience, social connection, and physiological functioning. These effects accumulate across time through feedback loops and trajectory-level dynamics.</p>
+      </div>
+      <div class="card" style="border-color:rgba(200,80,80,0.25);">
+        <h4 style="color:#c87b7b;">What Innovation Processes Do</h4>
+        <p style="font-size:0.85rem; margin:0;">Design and innovation processes typically optimize for usability, engagement, performance metrics, and conversion outcomes — while broader human outcomes (attention quality, relational depth, perceived agency, motivational orientation) remain implicit or unstructured.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">The Core Tension</h3>
+    <div style="display:flex; gap:2rem; align-items:center; justify-content:center; padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);">
+      <div style="text-align:center; flex:1;">
+        <div style="font-size:1.5rem; margin-bottom:0.4rem;">🔬</div>
+        <div style="font-size:0.8rem; color:var(--accent2); font-weight:600; margin-bottom:0.3rem;">Interdisciplinary Research</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Documents multi-layer environmental effects on human functioning</div>
+      </div>
+      <div style="font-size:1.8rem; color:var(--text-dim);">≠</div>
+      <div style="text-align:center; flex:1;">
+        <div style="font-size:1.5rem; margin-bottom:0.4rem;">🛠</div>
+        <div style="font-size:0.8rem; color:#c87b7b; font-weight:600; margin-bottom:0.3rem;">Innovation Frameworks</div>
+        <div style="font-size:0.75rem; color:var(--text-muted);">Conceptualize human outcomes as engagement, task completion, usability scores</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Key Challenges</h3>
+    <div class="grid-3 mt2">
+      <div class="card">
+        <h4>Terminological Fragmentation</h4>
+        <p style="font-size:0.82rem; margin:0;">The same behavioral mechanisms are named and operationalized differently across disciplines, preventing cross-field knowledge integration.</p>
+      </div>
+      <div class="card">
+        <h4>Missing Temporal Dimension</h4>
+        <p style="font-size:0.82rem; margin:0;">Design evaluations typically measure point-in-time outcomes, obscuring trajectory-level effects that accumulate through behavioral feedback loops across time.</p>
+      </div>
+      <div class="card">
+        <h4>Layer Underspecification</h4>
+        <p style="font-size:0.82rem; margin:0;">Innovation processes rarely distinguish between proximal influences (choice architecture, immediate affordances) and distal influences (institutional structures, cultural defaults) on behavior.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     CONCEPTUAL FRAMING
+════════════════════════════════════════════ -->
+<section id="framing">
+  <div class="container">
+    <div class="section-num">03 — Conceptual Framing</div>
+    <h2>Framework Architecture</h2>
+
+    <p>AEWF models human functioning as an emergent property of interaction between individuals and layered environmental systems. Rather than locating wellbeing outcomes in individual psychology, the framework positions them as downstream products of ecological conditions — where individual behavioral capacity is simultaneously an input to, and output of, the surrounding environment.</p>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Influence Pathway</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.2rem;">The proposed pathway from ecological conditions through behavioral mechanisms to functioning outcomes. Bidirectional arrows indicate that outcomes feed back to modify environmental conditions across time.</p>
+
+    <div class="pathway-v">
+      <div class="pv-node env">Ecological Conditions<br/><span style="font-size:0.72rem; opacity:0.75;">Multi-layer environmental influences operating simultaneously</span></div>
+      <div class="pv-arrow bidir"></div>
+      <div class="pv-node env">Behavioral Mechanisms<br/><span style="font-size:0.72rem; opacity:0.75;">Affordances · choice architecture · reinforcement · social norms · constraints</span></div>
+      <div class="pv-arrow"></div>
+      <div class="pv-node mech">Behavioral Patterns<br/><span style="font-size:0.72rem; opacity:0.75;">Repeated action sequences, habit structures, avoidance and approach behaviors</span></div>
+      <div class="pv-arrow"></div>
+      <div class="pv-node mech">Experience Patterns<br/><span style="font-size:0.72rem; opacity:0.75;">Cumulative cognitive, emotional, and social experience across time</span></div>
+      <div class="pv-arrow"></div>
+      <div class="pv-node out">Functioning Trajectories<br/><span style="font-size:0.72rem; opacity:0.75;">Behavioral · Cognitive · Emotional · Social · Physiological · Motivational</span></div>
+      <div class="pv-arrow bidir"></div>
+      <div class="pv-node time">Temporal Dimension<br/><span style="font-size:0.72rem; opacity:0.75;">Feedback loops, cumulative effects, trajectory reinforcement across life course</span></div>
+    </div>
+
+    <div class="note mt2">This pathway is a conceptual model. Empirical relationships between nodes require validation. The model is designed for organizing research reasoning, not prescribing causal claims.</div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Proximal vs. Distal Influences</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">A key AEWF distinction: proximal influences operate at the immediate behavioral environment level; distal influences operate further from the individual but constrain or enable proximal conditions.</p>
+
+    <div class="pd-compare">
+      <div class="pd-col">
+        <h4 style="color:var(--accent2);">Proximal Influences</h4>
+        <div class="pd-row">Built and spatial environment affordances</div>
+        <div class="pd-row">Dyadic and peer social environment</div>
+        <div class="pd-row">Digital platform interfaces and algorithms</div>
+        <div class="pd-row">Temporal structure (routines, schedules)</div>
+        <div class="pd-row">Choice architecture at point of behavior</div>
+        <div class="pd-row">Immediate reinforcement structures</div>
+      </div>
+      <div class="pd-col">
+        <h4 style="color:var(--accent3);">Distal Influences</h4>
+        <div class="pd-row">Organizational policy and workplace design</div>
+        <div class="pd-row">Healthcare access and system quality</div>
+        <div class="pd-row">Cultural norms governing emotional expression</div>
+        <div class="pd-row">Economic structures and resource availability</div>
+        <div class="pd-row">Technology platform governance standards</div>
+        <div class="pd-row">Media ecology and information environment</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Wellbeing Outcome Domains</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Six interdependent domains identified through cross-disciplinary synthesis. Click any domain to see sub-components.</p>
+
+    <div class="domain-grid" id="domain-grid">
+      <div class="domain-card" data-sub="Behavioral regularity · Adaptivity to context · Self-direction of behavior patterns · Degree of intentional vs. automatic action">
+        <div class="domain-icon">⟳</div>
+        <div class="domain-name">Behavioral Patterns</div>
+        <div class="domain-sub"></div>
+      </div>
+      <div class="domain-card" data-sub="Attention quality and sustained focus · Decision-making capacity · Cognitive load · Working memory availability · Executive function">
+        <div class="domain-icon">◈</div>
+        <div class="domain-name">Cognitive Functioning</div>
+        <div class="domain-sub"></div>
+      </div>
+      <div class="domain-card" data-sub="Affective baseline · Emotional regulation capacity · Resilience to stressors · Mood variability · Stress response patterns">
+        <div class="domain-icon">◉</div>
+        <div class="domain-name">Emotional Experience</div>
+        <div class="domain-sub"></div>
+      </div>
+      <div class="domain-card" data-sub="Relational quality · Sense of belonging · Perceived social support · Reciprocity in relationships · Social trust">
+        <div class="domain-icon">⬡</div>
+        <div class="domain-name">Social Connection</div>
+        <div class="domain-sub"></div>
+      </div>
+      <div class="domain-card" data-sub="Sleep quality and duration · Physical activity patterns · Stress response regulation · Physiological recovery capacity">
+        <div class="domain-icon">◬</div>
+        <div class="domain-name">Physiological Functioning</div>
+        <div class="domain-sub"></div>
+      </div>
+      <div class="domain-card" data-sub="Perceived agency and autonomy · Intrinsic motivation · Goal pursuit orientation · Self-determination (SDT: autonomy, competence, relatedness)">
+        <div class="domain-icon">↗</div>
+        <div class="domain-name">Motivational Orientation</div>
+        <div class="domain-sub"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Construct Cluster Map</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem;">Key constructs organized by functional category within the framework.</p>
+    <div class="cluster-grid">
+      <div class="cluster-node env-c">Environmental Affordances</div>
+      <div class="cluster-node env-c">Choice Architecture</div>
+      <div class="cluster-node env-c">Social Norms</div>
+      <div class="cluster-node env-c">Ecological Layers</div>
+      <div class="cluster-node mech-c">Reinforcement Structures</div>
+      <div class="cluster-node mech-c">Cognitive Load</div>
+      <div class="cluster-node mech-c">Behavioral Friction</div>
+      <div class="cluster-node mech-c">Information Exposure</div>
+      <div class="cluster-node sys-c">Feedback Loops</div>
+      <div class="cluster-node sys-c">Interaction Effects</div>
+      <div class="cluster-node sys-c">Leverage Points</div>
+      <div class="cluster-node sys-c">System Dynamics</div>
+      <div class="cluster-node out-c">Identity Processes</div>
+      <div class="cluster-node out-c">Motivational Structures</div>
+      <div class="cluster-node out-c">Attention Allocation</div>
+      <div class="cluster-node out-c">Wellbeing Trajectories</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     ECOLOGICAL LAYERS
+════════════════════════════════════════════ -->
+<section id="layers">
+  <div class="container">
+    <div class="section-num">04 — Framework Structure</div>
+    <h2>The Ecological Layer Model</h2>
+
+    <p>The AEWF proposes six ecological layers adapted from Bronfenbrenner's bioecological model, extended to incorporate behavioral mechanisms, digital environments, and the chronosystem's temporal dynamics. Each layer contains environmental conditions that influence human functioning through identifiable behavioral mechanisms. Click any layer to expand.</p>
+
+    <div class="eco-system mt3" id="eco-system">
+
+      <div class="eco-layer" data-layer="0">
+        <div class="eco-swatch sw-0"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-0">Layer 0</span>
+          <span class="eco-layer-name">Individual Behavioral Capacity</span>
+          <span class="eco-layer-short">Cognitive resources · Emotional regulation · Motivational orientation</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Cognitive resources (attention, working memory, executive function)</span>
+              <span class="eco-comp-pill">Emotional regulation capacity</span>
+              <span class="eco-comp-pill">Behavioral repertoire and coping strategies</span>
+              <span class="eco-comp-pill">Motivational orientation (SDT: autonomy, competence, relatedness)</span>
+            </div>
+            <div class="eco-mechanism"><strong>Note</strong> — Layer 0 is bidirectionally coupled with all surrounding layers. Individual capacity is both shaped by and shapes environmental conditions at every level. It is not the origin of wellbeing but a mediating node within the system.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+      <div class="eco-layer" data-layer="1">
+        <div class="eco-swatch sw-1"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-1">Layer 1 — Microsystem</span>
+          <span class="eco-layer-name">Immediate Behavioral Environment</span>
+          <span class="eco-layer-short">Built environment · Social context · Digital environment · Temporal structure</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Built and spatial environments (physical affordances and constraints)</span>
+              <span class="eco-comp-pill">Social environment (dyadic relationships, peer context, family system)</span>
+              <span class="eco-comp-pill">Digital environment (platforms, algorithms, interaction interfaces)</span>
+              <span class="eco-comp-pill">Temporal structure (routines, schedules, pacing)</span>
+            </div>
+            <div class="eco-mechanism"><strong>Primary Mechanisms</strong> — Affordances, behavioral cues, choice architecture, reinforcement schedules, social norms, cognitive load. These are the environmental conditions most immediately present at each moment of behavior.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+      <div class="eco-layer" data-layer="2">
+        <div class="eco-swatch sw-2"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-2">Layer 2 — Mesosystem</span>
+          <span class="eco-layer-name">Connections Between Microsystems</span>
+          <span class="eco-layer-short">Cross-context consistency · Norm transfer · Behavioral spillover</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Home environment × work/school environment interaction</span>
+              <span class="eco-comp-pill">Digital social environment × offline social environment</span>
+              <span class="eco-comp-pill">Consistency or contradiction across environmental contexts</span>
+            </div>
+            <div class="eco-mechanism"><strong>Primary Mechanisms</strong> — Norm transfer across contexts, identity signaling consistency, behavioral spillover effects, context-specific reinforcement patterns. This layer explains why changing one environmental context may produce unexpected effects in adjacent contexts.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+      <div class="eco-layer" data-layer="3">
+        <div class="eco-swatch sw-3"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-3">Layer 3 — Exosystem</span>
+          <span class="eco-layer-name">Structural and Institutional Conditions</span>
+          <span class="eco-layer-short">Workplace design · Healthcare access · Community infrastructure · Platform governance</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Workplace design and organizational policy</span>
+              <span class="eco-comp-pill">Healthcare system access and quality</span>
+              <span class="eco-comp-pill">Community infrastructure and resource availability</span>
+              <span class="eco-comp-pill">Technology platform governance and design standards</span>
+            </div>
+            <div class="eco-mechanism"><strong>Primary Mechanisms</strong> — Environmental constraints, institutional-level defaults, access barriers, distal affordances. Exosystem conditions often operate as background constraints that individuals experience as personal limitations rather than structural features.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+      <div class="eco-layer" data-layer="4">
+        <div class="eco-swatch sw-4"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-4">Layer 4 — Macrosystem</span>
+          <span class="eco-layer-name">Cultural, Economic, and Policy Context</span>
+          <span class="eco-layer-short">Cultural norms · Economic structures · Policy environments · Media ecology</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Cultural norms governing emotional expression and help-seeking</span>
+              <span class="eco-comp-pill">Economic structures shaping resource access and time availability</span>
+              <span class="eco-comp-pill">Policy environments governing behavioral default structures</span>
+              <span class="eco-comp-pill">Media and information ecology</span>
+            </div>
+            <div class="eco-mechanism"><strong>Primary Mechanisms</strong> — Identity-relevant constraints, cultural defaults, structural incentives, distal reinforcement patterns. Macrosystem influences shape what counts as normal, available, and possible across all lower layers simultaneously.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+      <div class="eco-layer" data-layer="5">
+        <div class="eco-swatch sw-5"></div>
+        <div class="eco-header">
+          <span class="eco-layer-tag lt-5">Layer 5 — Chronosystem</span>
+          <span class="eco-layer-name">Temporal Dimension</span>
+          <span class="eco-layer-short">Wellbeing trajectories · Cumulative effects · Life course dynamics</span>
+          <div class="eco-detail">
+            <div class="eco-components">
+              <span class="eco-comp-pill">Wellbeing trajectories unfolding over time</span>
+              <span class="eco-comp-pill">Cumulative effects of repeated behavioral patterns</span>
+              <span class="eco-comp-pill">Life course transitions as leverage points</span>
+              <span class="eco-comp-pill">Historical patterns of environmental exposure</span>
+            </div>
+            <div class="eco-mechanism"><strong>Primary Mechanisms</strong> — Habit formation over time, cumulative cognitive and emotional effects, developmental timing interactions. The chronosystem explains why identical environmental conditions may produce different outcomes depending on when in the life course they occur and how long they persist.</div>
+          </div>
+        </div>
+        <div class="eco-expand-icon">+</div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Behavioral Feedback Loop</h3>
+    <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.2rem;">How behavioral patterns stabilize and accumulate across time through reinforcement and environmental consistency.</p>
+
+    <div class="feedback-loop">
+      <div class="loop-track">
+        <div class="loop-node trigger">Environmental Cue</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node behavior">Behavioral Response</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node outcome">Immediate Outcome</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node reinforce">Reinforcement Signal</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-node">Environmental Stability</div>
+      </div>
+      <div class="loop-return">↩ Loop continues — repeated cycles stabilize behavioral patterns and reinforce environmental conditions that produced them</div>
+      <div class="loop-note">When reinforcement + stability conditions are met → behavior becomes habitual · When friction > perceived reward → behavior discontinued · When feedback is absent or inconsistent → loop degrades</div>
+    </div>
+
+    <div class="note mt3">The Ecological Layer × Mechanism Matrix — cross-tabulating layers with the behavioral mechanisms most commonly operating at each — is identified as the strongest analytical artifact of this framework. It shows where mechanisms are concentrated and where they interact across layers.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RESEARCH QUESTIONS
+════════════════════════════════════════════ -->
+<section id="rqs">
+  <div class="container">
+    <div class="section-num">05 — Research Questions</div>
+    <h2>What We're Asking</h2>
+
+    <div class="rq-primary">
+      <div class="label">Primary Research Question</div>
+      <div class="question">How do multiple ecological layers influence patterns of behavior, experience, and human functioning across time?</div>
+    </div>
+
+    <div class="rq-secondary">
+      <div class="rq-item">
+        <span class="rq-num">SQ1</span>
+        <span class="rq-text">What environmental factors most consistently influence behavior and functioning across disciplines — and how are they named differently across behavioral science, public health, environmental psychology, and human factors?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ2</span>
+        <span class="rq-text">How do proximal environmental influences (immediate behavioral environment) interact with distal influences (institutional structures, cultural norms) to produce functioning outcomes?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ3</span>
+        <span class="rq-text">What behavioral mechanisms mediate the relationship between ecological conditions and wellbeing outcomes across the six proposed outcome domains?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ4</span>
+        <span class="rq-text">How do environmental influences accumulate across time through feedback loops and interaction effects — and at what points in the chronosystem is leverage most available?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ5</span>
+        <span class="rq-text">How do current innovation and design frameworks conceptualize environmental influence on human functioning — and where are the structural gaps relative to what interdisciplinary research documents?</span>
+      </div>
+      <div class="rq-item">
+        <span class="rq-num">SQ6</span>
+        <span class="rq-text">Where do disciplinary terminologies diverge for the same underlying mechanisms — and what conceptual alignment is possible across ecology, behavioral economics, psychology, and public health?</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     METHODOLOGY
+════════════════════════════════════════════ -->
+<section id="method">
+  <div class="container">
+    <div class="section-num">06 — Methodology</div>
+    <h2>Research Approach</h2>
+
+    <p>AEWF employs a conceptual synthesis methodology as its primary approach — systematic interdisciplinary literature review and construct mapping — with future empirical directions identified for each framework component. The current phase is framework construction, not empirical validation.</p>
+
+    <div class="note mb2">This is a conceptual research project. Empirical validation of framework relationships is a future research direction, not a current claim.</div>
+
+    <div class="grid-2 mt3">
+      <div class="method-card">
+        <div class="method-icon">📚</div>
+        <div class="method-name">Cross-Disciplinary Literature Synthesis</div>
+        <div class="method-desc">Systematic review of behavioral science, ecological psychology, public health, environmental psychology, and human factors literatures. Maps terminological convergence and divergence across fields.</div>
+        <div class="method-instruments">Produces: Cross-discipline mechanism synthesis, terminological alignment table</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">⬡</div>
+        <div class="method-name">Construct Synthesis & Mapping</div>
+        <div class="method-desc">Identification, definition, and structural mapping of recurring constructs across literatures. Produces operational construct definitions that span disciplinary vocabulary.</div>
+        <div class="method-instruments">Produces: Construct definition table, wellbeing domain taxonomy</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">⊘</div>
+        <div class="method-name">Comparative Framework Analysis</div>
+        <div class="method-desc">Systematic evaluation of existing frameworks (HCD, behavioral economics, public health models, UX research frameworks) against the ecological model's construct vocabulary and layer structure.</div>
+        <div class="method-instruments">Produces: Ecological layer × mechanism matrix, gap analysis</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">◎</div>
+        <div class="method-name">Conceptual Mechanism Mapping</div>
+        <div class="method-desc">Identification of behavioral mechanisms operating at each ecological layer and mapping of their interaction effects across layers. Grounded in behavioral pathway analysis.</div>
+        <div class="method-instruments">Produces: Behavioral mechanism pathway diagram, layer interaction diagram</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Future Empirical Methods</h3>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Qualitative — Expert & Participant Interviews</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem; margin-bottom:0.5rem;"><strong style="color:var(--text);">In-depth interviews</strong> with individuals across diverse environmental contexts — to ground the abstract ecological model in lived experience and document how ecological layer conditions manifest in behavioral and experiential reports.</p>
+        <p style="font-size:0.85rem; margin-bottom:0.5rem;"><strong style="color:var(--text);">Expert interviews</strong> across ecology, behavioral economics, environmental psychology, and public health — to evaluate cross-disciplinary validity of framework constructs and identify mechanism categorization gaps.</p>
+        <p style="font-size:0.85rem;"><strong style="color:var(--text);">Case-based analysis</strong> of individuals experiencing specific ecological conditions — to test the framework's descriptive adequacy against real biographical contexts.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Quantitative — Survey & Multilevel Modeling</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem; margin-bottom:0.5rem;"><strong style="color:var(--text);">Cross-sectional survey</strong> measuring ecological conditions and wellbeing outcomes across a population sample. Instruments: Perceived Stress Scale, UCLA Loneliness Scale, Basic Psychological Needs Scale, environmental conditions items.</p>
+        <p style="font-size:0.85rem;"><strong style="color:var(--text);">Multilevel modeling</strong> of population data — appropriately models hierarchical data structure (individuals nested in communities nested in institutions nested in policy environments) to estimate variance explained at each ecological level and test relative contributions of proximal vs. distal influences.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Evaluation — Framework Validity Review</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;"><strong style="color:var(--text);">Expert panel review</strong> — framework validity evaluation by domain experts before empirical application. Produces expert feedback on construct validity, comprehensiveness, and practical applicability. Strengthens framework credibility for applied use and identifies revision priorities.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">07 — Research Artifacts</div>
+    <h2>Artifact Suite</h2>
+    <p>The following artifacts represent the analytical outputs of this framework development phase. Artifacts are organized by function: diagrams communicate structure; research artifacts ground the framework; synthesis artifacts demonstrate analytical reasoning.</p>
+
+    <h3 class="mt3 mb2">Diagrams</h3>
+    <div class="grid-2">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⬡</div>
+        <div class="artifact-name">Multi-Layer Ecological Model</div>
+        <div class="artifact-badge badge-flagship">Flagship Visual</div>
+        <div class="artifact-note">Concentric rings / nested systems diagram. Visualizes how distal and proximal influences on wellbeing interact from individual behavioral capacity through microsystem, mesosystem, exosystem, macrosystem, and chronosystem layers.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">→</div>
+        <div class="artifact-name">Behavioral Mechanism Pathway Diagram</div>
+        <div class="artifact-badge badge-analytic">Mechanism Reasoning</div>
+        <div class="artifact-note">Causal pathway diagram showing how environmental conditions at different ecological layers translate into behavioral outcomes through proximal vs. distal influence pathways with named mechanisms at each node.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">↔</div>
+        <div class="artifact-name">Ecological Layer Interaction Diagram</div>
+        <div class="artifact-badge badge-analytic">Systems Dynamics</div>
+        <div class="artifact-note">Systems influence diagram showing how conditions at one ecological layer constrain, enable, or modify conditions at adjacent layers. Documents dynamic interaction effects between system levels.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⟶</div>
+        <div class="artifact-name">Wellbeing Trajectory Model</div>
+        <div class="artifact-note">Longitudinal influence diagram showing how cumulative behavioral patterns over time produce wellbeing trajectories. Adds temporal dimension to the ecological model.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">◎</div>
+        <div class="artifact-name">Leverage Point Identification Map</div>
+        <div class="artifact-note">Annotated systems diagram identifying specific points in the ecological system where interventions could most efficiently influence behavioral and wellbeing outcomes, organized by ecological layer.</div>
+      </div>
+    </div>
+
+    <h3 class="mt4 mb2">Research Artifacts</h3>
+    <div class="grid-2">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📄</div>
+        <div class="artifact-name">Literature Synthesis: Ecological Models & Behavioral Outcomes</div>
+        <div class="artifact-badge badge-synthesis">High Portfolio Value</div>
+        <div class="artifact-note">Synthesizes Bronfenbrenner, behavioral economics, environmental psychology, and public health literature. Demonstrates interdisciplinary synthesis ability and theoretical grounding.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📋</div>
+        <div class="artifact-name">Construct Definition Table</div>
+        <div class="artifact-note">Defines ecological layer constructs, behavioral mechanism constructs, and wellbeing outcome constructs with operational clarity. Demonstrates conceptual rigor and terminological precision.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⟳</div>
+        <div class="artifact-name">Framework Development Log</div>
+        <div class="artifact-note">Documents the iterative process of framework construction, including discarded alternatives and revision rationale. Demonstrates intellectual transparency and research maturity.</div>
+      </div>
+    </div>
+
+    <h3 class="mt4 mb2">Synthesis Artifacts</h3>
+    <div class="grid-2">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">◈</div>
+        <div class="artifact-name">Cross-Discipline Mechanism Synthesis</div>
+        <div class="artifact-badge badge-flagship">Strongest Synthesis Artifact</div>
+        <div class="artifact-note">Comparative synthesis table mapping how the same behavioral mechanism is described differently across ecology, behavioral economics, psychology, and public health. Demonstrates terminological convergence across fields.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⬡</div>
+        <div class="artifact-name">Wellbeing Domain Taxonomy</div>
+        <div class="artifact-note">Hierarchical taxonomy diagram organizing six domains of human wellbeing (behavioral, cognitive, emotional, social, physiological, motivational) with mechanism pathways. Provides conceptual vocabulary for wellbeing outcomes.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">▦</div>
+        <div class="artifact-name">Ecological Layer × Mechanism Matrix</div>
+        <div class="artifact-badge badge-analytic">Strongest Analytical Artifact</div>
+        <div class="artifact-note">Cross-tabulates ecological layers with behavioral mechanisms most commonly operating at each. Shows where mechanisms are concentrated, where they interact across layers, and where they are absent from current design frameworks.</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">≡</div>
+        <div class="artifact-name">Proximal vs. Distal Influence Table</div>
+        <div class="artifact-note">Two-column comparison table contrasting near-environment influences (choice architecture, social context, built environment) with distal influences (policy, cultural norms, institutional structures). Makes the proximal/distal distinction concrete and applicable.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     SYNTHESIS
+════════════════════════════════════════════ -->
+<section id="synthesis">
+  <div class="container">
+    <div class="section-num">08 — Synthesis</div>
+    <h2>Cross-Disciplinary Patterns</h2>
+
+    <p>The following patterns emerged from cross-disciplinary literature synthesis and conceptual analysis. These are theoretical convergences — not empirically validated findings. Each represents a point where independent disciplinary literatures arrive at structurally similar conclusions under different names.</p>
+
+    <div class="mt3">
+      <div class="synthesis-theme">
+        <p>Behavioral science, environmental psychology, and public health consistently identify <strong style="color:var(--text);">behavioral patterns, cognitive processes, emotional experience, social interaction, attention allocation, identity development, motivational structures, and physiological regulation</strong> as recurring domains of human functioning influenced by environmental conditions. These domains show convergence across disciplinary vocabularies despite terminological variation.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Environmental influences operate through a recurring set of mechanisms across disciplines: <strong style="color:var(--text);">constraints, affordances, reinforcement structures, information exposure patterns, social signaling environments, and resource accessibility</strong>. The specific labels vary; the functional descriptions converge.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Effects of environmental conditions do not appear to be additive and linear. Instead, they accumulate across time through <strong style="color:var(--text);">feedback loops and interaction effects</strong> that produce trajectory-level outcomes — wellbeing states that are partly determined by historical environmental exposure patterns, not only current conditions.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Design and innovation frameworks evaluated against the ecological model consistently <strong style="color:var(--text);">address proximal and immediate behavioral outcomes</strong> (usability, engagement, task completion) while systematically underspecifying distal-layer environmental conditions and temporal trajectory effects.</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>The <strong style="color:var(--text);">mesosystem layer</strong> — connections between microsystems — is particularly underrepresented in applied design thinking, despite substantial research on behavioral spillover effects, norm transfer across contexts, and the wellbeing consequences of consistency or contradiction between environmental contexts (e.g., digital vs. offline social environments).</p>
+      </div>
+      <div class="synthesis-theme">
+        <p>Terminology fragmentation is not superficial. In some cases, what behavioral economics names "default architecture" and what public health names a "structural determinant" and what environmental psychology names a "contextual affordance" refer to the same underlying mechanism — producing parallel literatures that rarely cite each other.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">09 — Key Insights</div>
+    <h2>Tentative Patterns</h2>
+    <p>These insights are directional propositions generated from conceptual synthesis. They require empirical testing and should not be treated as causal claims.</p>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">I-01</div>
+        <div>
+          <div class="insight-title">Environment-behavior relationships are multi-layered rather than linear</div>
+          <div class="insight-desc">Human behavior is not adequately explained by single-level environmental variables. Outcomes emerge from simultaneous influence across microsystem, mesosystem, exosystem, and macrosystem layers — with interaction effects that produce non-linear dynamics not reducible to any individual layer.</div>
+          <span class="insight-tag">Ecological Layers</span>
+          <span class="insight-tag">System Dynamics</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-02</div>
+        <div>
+          <div class="insight-title">Proximal environmental influences often mediate distal influences</div>
+          <div class="insight-desc">Distal influences (cultural norms, institutional structures, economic conditions) appear to produce their effects on individual behavior largely through proximal mechanisms — shaping the choice architecture, affordances, and reinforcement structures that individuals encounter directly. Understanding this mediation structure is necessary for identifying effective leverage points.</div>
+          <span class="insight-tag">Proximal vs. Distal Influences</span>
+          <span class="insight-tag">Behavioral Pathways</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-03</div>
+        <div>
+          <div class="insight-title">Behavioral mechanisms function as translation layers between environment and outcomes</div>
+          <div class="insight-desc">Environmental conditions do not directly produce wellbeing outcomes. They operate through identifiable behavioral mechanisms — reinforcement structures, cognitive load effects, affordance provision, social norm signaling — that translate ecological conditions into patterns of action and experience. Mechanism identification is analytically prior to intervention design.</div>
+          <span class="insight-tag">Behavioral Mechanisms</span>
+          <span class="insight-tag">Intervention Logic</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-04</div>
+        <div>
+          <div class="insight-title">Feedback loops produce trajectory effects rather than isolated outcomes</div>
+          <div class="insight-desc">Repeated environmental exposure produces behavioral patterns that modify environmental conditions — creating self-reinforcing trajectories. Wellbeing outcomes are therefore partly determined by cumulative historical exposure, not only current conditions. Point-in-time measurement systematically underestimates these trajectory dynamics.</div>
+          <span class="insight-tag">Feedback Loops</span>
+          <span class="insight-tag">Chronosystem</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-05</div>
+        <div>
+          <div class="insight-title">Terminology fragmentation obscures conceptual overlap across disciplines</div>
+          <div class="insight-desc">The same behavioral mechanisms are named, operationalized, and studied independently across behavioral science, public health, environmental psychology, and systems theory. This fragmentation produces parallel knowledge bases that fail to accumulate — and limits the transferability of findings across disciplinary contexts.</div>
+          <span class="insight-tag">Cross-Disciplinary Synthesis</span>
+          <span class="insight-tag">Terminological Alignment</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">I-06</div>
+        <div>
+          <div class="insight-title">Innovation frameworks often under-specify environmental effects on human functioning</div>
+          <div class="insight-desc">Design frameworks that organize around usability, engagement, and task completion leave most of the ecological layer structure unaddressed. This is not incidental — it reflects a conceptual narrowing that systematically excludes distal-layer conditions, temporal trajectory effects, and multi-domain wellbeing outcomes from design evaluation criteria.</div>
+          <span class="insight-tag">Design Practice Gap</span>
+          <span class="insight-tag">Human Outcomes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     DESIGN IMPLICATIONS
+════════════════════════════════════════════ -->
+<section id="implications">
+  <div class="container">
+    <div class="section-num">10 — Design Implications</div>
+    <h2>Framework as Reasoning Tool</h2>
+
+    <p>AEWF is intended as a <strong>reasoning tool</strong> — a structured conceptual scaffold for thinking about environment-behavior relationships — rather than a predictive model or prescriptive intervention framework. Its primary value is in how it changes the questions practitioners and researchers ask.</p>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Potential Applications</h3>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Structuring UX research questions ecologically</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">The ecological layer model provides a structured vocabulary for asking where in the system a behavioral pattern originates — and what layer-specific mechanisms are producing or maintaining it. Rather than asking "why do users behave this way?", AEWF-informed research asks "what proximal and distal environmental conditions are producing this behavioral pattern, through which mechanisms, and with what trajectory-level consequences?"</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Mapping product environments to the ecological model</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Digital products and platforms operate across multiple ecological layers simultaneously. A social media platform exists at the microsystem (interface affordances, algorithmic content), contributes to mesosystem dynamics (digital-offline social interaction effects), and at scale shapes macrosystem cultural norms. The AEWF enables researchers and designers to map where a product operates in the ecological system and what layer-specific consequences follow.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Identifying unintended behavioral and wellbeing outcomes</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Design decisions that optimize for proximal-layer outcomes (engagement, time-on-platform, task completion) may produce unintended effects at other ecological layers — including distal reinforcement of attention fragmentation, erosion of motivational orientation, or mesosystem disruption of offline social environments. The AEWF provides a systematic structure for anticipating these cross-layer interaction effects before deployment.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Supporting interdisciplinary collaboration</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">The AEWF's cross-disciplinary construct vocabulary provides a shared language for researchers from behavioral science, public health, engineering, and design to work on environment-behavior problems without being separated by terminological differences. By mapping how each discipline describes the same mechanism, the framework enables genuine knowledge transfer across fields.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Evaluating product ecosystems against wellbeing domains</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p style="font-size:0.85rem;">Rather than evaluating a product against narrow usability or engagement metrics, AEWF suggests evaluating product ecosystems against the six wellbeing outcome domains (behavioral patterns, cognitive functioning, emotional experience, social connection, physiological functioning, motivational orientation) — asking which domains are addressed, which are implicated but unmonitored, and which are adversely affected by current design decisions.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <h3 class="mb2">Framework Principles</h3>
+    <div class="principle-grid mt2">
+      <div class="principle-pill">Multi-layer analysis before intervention</div>
+      <div class="principle-pill">Mechanism identification as prerequisite</div>
+      <div class="principle-pill">Temporal trajectory over point-in-time</div>
+      <div class="principle-pill">Proximal–distal distinction</div>
+      <div class="principle-pill">Cross-disciplinary vocabulary alignment</div>
+      <div class="principle-pill">System dynamics over linear causation</div>
+      <div class="principle-pill">Wellbeing outcomes as multi-domain</div>
+      <div class="principle-pill">Leverage point reasoning</div>
+      <div class="principle-pill">Emergent rather than individual properties</div>
+      <div class="principle-pill">Bidirectional environment–behavior influence</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">11 — Reflection</div>
+    <h2>Limitations & Posture</h2>
+
+    <p>AEWF is a conceptual organizing structure — not a validated theory. The following limitations are not incidental but structural. They define the current epistemic position of the framework and the work required to move it toward empirical adequacy.</p>
+
+    <div class="limitation-grid mt3">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Framework requires empirical testing.</strong> Proposed relationships between ecological layers, behavioral mechanisms, and wellbeing outcomes are conceptual propositions. Causal claims are not supported without empirical validation across diverse populations and contexts.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Terminology varies across disciplines.</strong> Despite the framework's attempt at cross-disciplinary synthesis, operational definitions remain contested within source disciplines. The current construct vocabulary reflects one synthesis approach among several possible.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Model complexity may require simplification for applied use.</strong> The full multi-layer framework may exceed practical working complexity for design and UX research contexts. Applied versions may require selective engagement with specific layers or mechanisms, with simplification trade-offs to be documented.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Causal relationships are not empirically validated.</strong> The framework proposes directional influence pathways. Whether these pathways hold across contexts, in what directions, with what effect sizes, and with what moderating variables is an open empirical question at every node.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Scope may evolve with additional synthesis.</strong> The current framework reflects synthesis of a defined literature set. Integrating additional fields (e.g., developmental neuroscience, anthropology, political economy) may require structural revision of ecological layer boundaries and mechanism typology.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text"><strong style="color:var(--text);">Framework is intended as organizing structure, not prediction.</strong> AEWF does not predict specific behavioral or wellbeing outcomes from specified environmental inputs. It provides a structured vocabulary for organizing research questions, not a model for generating empirical predictions without further specification.</div>
+      </div>
+    </div>
+
+    <div class="card mt4" style="border-color: rgba(123,200,152,0.3); background: rgba(123,200,152,0.03);">
+      <h4 style="color:var(--accent4);">Research Posture</h4>
+      <p style="font-size:0.9rem; color:var(--text); margin:0;">AEWF is offered as an exercise in interdisciplinary synthesis — an attempt to build a conceptual bridge between what research reveals about environmental influence on human functioning and how that knowledge is (or is not) available to the people who design the environments others inhabit. It does not claim to have resolved the theoretical tensions between source disciplines, or to have identified a definitive mechanism taxonomy. It claims to have mapped the terrain more completely than any single discipline has, and to have made that map useful for asking better research questions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">12 — Next Steps</div>
+    <h2>Future Research Directions</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4>Operationalizing Framework Constructs</h4>
+        <p>Develop measurement approaches for each ecological layer's environmental conditions and each wellbeing outcome domain — moving from conceptual constructs to measurable variables with validated instruments.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Testing Ecological Layer Interactions</h4>
+        <p>Empirical investigation of how conditions at one ecological layer constrain or enable conditions at adjacent layers — with particular focus on mesosystem dynamics, which are underrepresented in existing research.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Mapping Product Environments</h4>
+        <p>Apply the ecological model to specific product ecosystems — mapping where each product operates across layers, what mechanisms are activated at each layer, and what cross-layer interaction effects are produced.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Examining Interaction Effects Between Layers</h4>
+        <p>Investigate non-additive interaction effects between ecological layer conditions — particularly where distal conditions amplify or suppress proximal mechanism effects in ways not predictable from layer-specific analysis.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Integrating Framework into UX Research Workflows</h4>
+        <p>Develop practical methods for incorporating ecological layer reasoning into UX research practice — including research question framing tools, environmental audit frameworks, and wellbeing-domain evaluation criteria.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Testing Framework Across Domains</h4>
+        <p>Evaluate the framework's descriptive adequacy across distinct domains — healthcare, education, workplace design, digital platforms, community infrastructure — to identify where layer structure generalizes and where domain-specific modification is required.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Applied Ecological Wellness Framework — UX Research Case Study · Behavioral Science · Systems Thinking · Applied Wellness Innovation (AWI) Studio · Spring 2026</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">A conceptual research framework. Organizing structure for research reasoning, not a predictive model.</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Ecological Layers ──
+  const ecoLayers = document.querySelectorAll('.eco-layer');
+  ecoLayers.forEach(layer => {
+    layer.addEventListener('click', () => {
+      const wasActive = layer.classList.contains('active');
+      ecoLayers.forEach(l => l.classList.remove('active'));
+      if (!wasActive) layer.classList.add('active');
+    });
+  });
+
+  // ── Wellbeing Domains ──
+  const domainCards = document.querySelectorAll('.domain-card');
+  domainCards.forEach(card => {
+    const sub = card.querySelector('.domain-sub');
+    if (sub) sub.textContent = card.dataset.sub;
+    card.addEventListener('click', () => {
+      const wasActive = card.classList.contains('active');
+      domainCards.forEach(c => c.classList.remove('active'));
+      if (!wasActive) card.classList.add('active');
+    });
+  });
+
+  // ── Scroll fade-in ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.06 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
