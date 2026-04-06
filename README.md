@@ -1,6 +1,6 @@
 # AWI Studio Interactive Portfolio Projects
 
-This repository contains interactive portfolio artifacts developed through Applied Wellness Innovation (AWI) Studio.
+This repository contains interactive portfolio project artifacts developed through Applied Wellness Innovation (AWI) Studio.
 
 The projects in this repository translate behavioral science, systems thinking, and human-centered research into structured frameworks, conceptual models, and decision-support tools designed to improve real-world human outcomes across products, environments, and experiences.
 
