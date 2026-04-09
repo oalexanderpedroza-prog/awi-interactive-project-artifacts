@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AICOS — AI-Enhanced Clinical Assessment System</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #7ba5c8;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(123,165,200,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(123,165,200,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 560px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(123,165,200,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Model Flow ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 460px;
+      text-align: center; padding: 0.9rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--text);
+      position: relative; z-index: 1;
+    }
+    .model-node.accent4-border {
+      border-color: rgba(123,165,200,0.5);
+      background: rgba(123,165,200,0.05);
+    }
+    .model-node.highlight {
+      border-color: rgba(123,165,200,0.5);
+      background: rgba(123,165,200,0.06);
+      color: var(--accent4);
+    }
+    .model-node-title { font-weight: 600; color: var(--text); }
+    .model-node-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(123,165,200,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 22px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Cards ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(123,165,200,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body h4 { margin-top: 0.8rem; margin-bottom: 0.3rem; }
+    .expandable-body h4:first-child { margin-top: 0; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(123,165,200,0.1); color: var(--accent4); border: 1px solid rgba(123,165,200,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Construct Map ── */
+    .construct-map {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    @media (max-width: 640px) { .construct-map { grid-template-columns: 1fr 1fr; } }
+    .construct-node {
+      padding: 0.6rem 0.8rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .construct-node.primary { border-color: rgba(123,165,200,0.4); color: var(--accent4); background: rgba(123,165,200,0.04); }
+    .construct-node.secondary { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .construct-node.tertiary { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Synthesis Theme ── */
+    .synthesis-theme {
+      padding: 1rem 1.2rem; border-left: 3px solid var(--accent4);
+      background: rgba(123,165,200,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain Cards (Framework) ── */
+    .domain-framework { display: flex; flex-direction: column; gap: 0.8rem; }
+    .domain-framework-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem; border-left: 3px solid var(--accent4);
+    }
+    .domain-framework-card:hover { background: var(--surface2); }
+    .domain-fw-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.3rem; }
+    .domain-fw-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .domain-fw-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .domain-fw-mechs { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
+
+    /* ── Principle Pills ── */
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill {
+      font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .principle-pill:hover { border-color: rgba(123,165,200,0.4); color: var(--accent4); background: rgba(123,165,200,0.04); }
+
+    /* ── Fragmentation Visual ── */
+    .fragmentation-card {
+      background: var(--surface2); border: 1px solid rgba(123,165,200,0.3);
+      border-radius: var(--radius); padding: 1.5rem; margin-top: 1.5rem;
+    }
+    .frag-row {
+      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+      padding: 0.6rem 0;
+    }
+    .frag-block {
+      flex: 1; text-align: center; padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .frag-block-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .frag-block-items { font-size: 0.78rem; color: var(--text-dim); }
+    .frag-sep { font-size: 1.3rem; color: var(--text-dim); flex-shrink: 0; }
+    .frag-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+
+    /* ── Pathway ── */
+    .pathway { display: flex; flex-direction: column; gap: 0; }
+    .pathway-step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.4rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      position: relative;
+    }
+    .pathway-step-num {
+      font-size: 1.4rem; font-weight: 700; color: var(--accent4); min-width: 40px;
+      line-height: 1; padding-top: 0.1rem; flex-shrink: 0;
+    }
+    .pathway-step-body {}
+    .pathway-step-body h4 { color: var(--text); margin-bottom: 0.3rem; }
+    .pathway-step-body p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+    .pathway-connector {
+      width: 1px; height: 20px; background: var(--border); margin: 0 0 0 calc(1.4rem + 20px);
+      position: relative;
+    }
+    .pathway-connector::after {
+      content: '↓'; position: absolute; bottom: -8px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.8rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Gap Card (Two-Part) ── */
+    .gap-card {
+      background: var(--surface); border: 1px solid rgba(123,165,200,0.3);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .gap-card-row { padding: 1.2rem 1.5rem; }
+    .gap-card-row:first-child { border-bottom: 1px solid var(--border); }
+    .gap-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.4rem; }
+    .gap-text { font-size: 0.87rem; color: var(--text-muted); }
+
+    /* ── Feedback Card ── */
+    .feedback-card {
+      background: rgba(123,165,200,0.04); border: 1px solid rgba(123,165,200,0.2);
+      border-radius: var(--radius); padding: 1.2rem 1.5rem; margin-top: 1.5rem;
+    }
+    .feedback-card p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Comparison Model ── */
+    .comparison-model { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+    @media (max-width: 640px) { .comparison-model { grid-template-columns: 1fr; } }
+    .comparison-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+    }
+    .comparison-card.traditional h4 { color: var(--text-muted); }
+    .comparison-card.wv-model h4 { color: var(--accent4); }
+    .comparison-steps { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.6rem; }
+    .comparison-step {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-step:last-child { border-bottom: none; }
+    .comparison-step.active { color: var(--accent4); }
+
+    /* ── Capability Lists ── */
+    .cap-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; padding: 0; margin-top: 0.5rem; }
+    .cap-list li { font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 0.6rem; align-items: flex-start; }
+    .cap-list li::before { content: '·'; color: var(--text-dim); flex-shrink: 0; }
+
+    /* ── Case Card ── */
+    .case-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent4);
+      border-radius: var(--radius); padding: 1.5rem 1.5rem 1rem;
+      margin-bottom: 2rem;
+    }
+    .case-card h3 { color: var(--text); margin-bottom: 1rem; }
+
+    /* ── Warning Callout ── */
+    .callout-warning {
+      padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(123,165,200,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.9rem; color: var(--text-muted); line-height: 1.65;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Accent Border Card ── */
+    .card-accent4 {
+      background: var(--surface); border: 1px solid rgba(123,165,200,0.35);
+      background-color: rgba(123,165,200,0.03);
+      border-radius: var(--radius); padding: 1.2rem 1.5rem;
+    }
+    .card-accent4 p { font-size: 0.92rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Artifact List ── */
+    .artifact-list { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; padding: 0; margin-top: 0.8rem; }
+    .artifact-list li {
+      font-size: 0.85rem; color: var(--text-muted);
+      display: flex; gap: 0.8rem; align-items: flex-start;
+      padding: 0.6rem 0.8rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .artifact-list li::before { content: '—'; color: var(--accent4); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">AICOS</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#workflow">Workflow</a></li>
+    <li><a href="#safeguards">Safeguards</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#cases">Cases</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">Clinical Practice · Applied Behavioral Science · Systems Thinking</div>
+    <h1 class="hero-title">AI-Enhanced Clinical<br/><em>Assessment System</em></h1>
+    <p class="hero-subtitle">Ethical integration of AI into service delivery workflows — an experimental exploration of structured reasoning support for behavioral health assessment.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">Clinical Practice</span>
+      <span class="tag accent2">Applied Behavioral Science</span>
+      <span class="tag accent3">Systems Thinking</span>
+      <span class="tag">Service Delivery</span>
+      <span class="tag">Ethical AI Integration</span>
+      <span class="tag">Experimental / Conceptual</span>
+    </div>
+    <div class="hero-statement">
+      This project emerged from direct practice experience in a county behavioral health setting, where clinicians routinely navigate high caseloads, fragmented intake processes, and substantial documentation burden. It explores whether structured AI workflows can reduce cognitive load and administrative friction in clinical assessment — not by replacing clinical judgment, but by providing reasoning scaffolding that allows clinicians to allocate more attention to the interpersonal and clinical dimensions of their work. All testing used hypothetical cases. No real client data was used at any point.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — CONTEXT AND ROLE
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Context and Role</div>
+    <h2>Practice Origin</h2>
+
+    <p>Clinical documentation and assessment workflows in behavioral health settings impose significant cognitive demands on practitioners. Clinicians must simultaneously hold multiple information streams — presenting concerns, psychosocial history, risk factors, substance use patterns, functional impairment, and environmental stressors — while maintaining therapeutic engagement with the client. The cognitive load associated with translating unstructured narrative into structured documentation, identifying assessment gaps, and maintaining consistency across records is well-documented in implementation science and human factors literature.</p>
+
+    <p>This project explored whether a structured multi-agent AI workflow could reduce that burden by functioning as clinical infrastructure — organizing information, surfacing gaps, structuring documentation, and generating hypotheses for clinician review — rather than as a decision-making substitute. The biopsychosocial model was selected as the organizing framework because it aligns with social work training and provides structured reasoning scaffolding across biological, psychological, and social/environmental domains.</p>
+
+    <p>The exploration was conducted experimentally using hypothetical case materials and structured prompt architectures within a Notion AI workspace. The goal was to assess workflow feasibility, identify risks and safeguards, and examine whether AI could function as a structured reasoning environment rather than as a standalone decision-maker.</p>
+
+    <div class="callout-warning">
+      ⚠ Experimental Status — This project was conducted entirely as a conceptual experiment. All case materials are hypothetical. No real client data was used, stored, or processed. The workflow was designed to explore feasibility, risks, and ethical boundaries — not to deliver clinical services.
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">At a Glance</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Project Type</h4>
+        <p style="font-size:0.85rem; margin:0;">Experimental / Conceptual</p>
+      </div>
+      <div class="card">
+        <h4>Domain</h4>
+        <p style="font-size:0.85rem; margin:0;">Behavioral health service delivery</p>
+      </div>
+      <div class="card">
+        <h4>Focus</h4>
+        <p style="font-size:0.85rem; margin:0;">Ethical AI integration · cognitive load reduction · clinical documentation support</p>
+      </div>
+      <div class="card">
+        <h4>Methods</h4>
+        <p style="font-size:0.85rem; margin:0;">Hypothetical case testing · workflow prototyping · risk analysis · structured prompt design</p>
+      </div>
+      <div class="card">
+        <h4>Setting</h4>
+        <p style="font-size:0.85rem; margin:0;">Community behavioral health (county-level)</p>
+      </div>
+      <div class="card">
+        <h4>Status</h4>
+        <p style="font-size:0.85rem; margin:0;">Early prototype — concept validation phase</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — RESEARCH PROBLEM AND GOALS
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Research Problem and Goals</div>
+    <h2>The Documentation Burden</h2>
+
+    <p>Clinical documentation and assessment workflows in behavioral health settings frequently involve structural friction points that reduce available time for direct client engagement and increase the risk of information omission. These are not individual performance problems — they are features of service delivery systems that impose cognitive burden on practitioners.</p>
+
+    <h3 class="mb2">Friction Points Identified</h3>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Repetitive manual structuring of narrative information across intake, progress notes, and treatment plans</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Cognitive switching between active listening, clinical reasoning, and documentation tasks during sessions</div>
+      <div class="friction-level friction-high">High friction</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Fragmented intake data distributed across multiple forms and systems with inconsistent structure</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Difficulty tracking which assessment domains have been adequately covered and which require follow-up</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Inconsistent documentation structure across clinicians, reducing continuity when clients transition between providers</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Limited time for synthesis — clinicians often document after sessions under time pressure, increasing omission risk</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Project Goals</h3>
+    <div class="card">
+      <div class="insight-list">
+        <div class="insight-item">
+          <div class="insight-num">1</div>
+          <div class="insight-body">
+            <div class="insight-desc">Explore whether structured AI agents can reduce cognitive load during clinical intake and assessment</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">2</div>
+          <div class="insight-body">
+            <div class="insight-desc">Test whether a multi-agent architecture can organize clinical information consistently while preserving clinician authority</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">3</div>
+          <div class="insight-body">
+            <div class="insight-desc">Identify ethical boundaries, risks, and safeguards required for any AI integration into clinical service delivery</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">4</div>
+          <div class="insight-body">
+            <div class="insight-desc">Examine whether AI can function as reasoning scaffolding — structuring information and surfacing gaps — without replacing clinical judgment</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-num">5</div>
+          <div class="insight-body">
+            <div class="insight-desc">Document implementation constraints, failure modes, and oversight requirements</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — RESEARCH APPROACH
+════════════════════════════════════════════ -->
+<section id="methodology">
+  <div class="container">
+    <div class="section-num">03 — Research Approach</div>
+    <h2>Methodology</h2>
+
+    <p>This project used an experimental workflow prototyping approach — designing, building, and testing a structured AI workflow using hypothetical case materials to assess feasibility, output quality, and risk characteristics.</p>
+
+    <div class="grid-2 mt3">
+      <div class="method-card">
+        <div class="method-icon">🔧</div>
+        <div class="method-name">Workflow Architecture Design</div>
+        <div class="method-desc">Designed a modular, multi-agent workflow organized around the biopsychosocial formulation model and the IBHA (Initial Behavioral Health Assessment) template structure used in county behavioral health settings.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📐</div>
+        <div class="method-name">Structured Prompt Engineering</div>
+        <div class="method-desc">Developed instruction-based prompt architectures with role definitions, input constraints, reasoning guardrails, and output format specifications designed to prevent hallucinated clinical claims.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🧪</div>
+        <div class="method-name">Hypothetical Case Testing</div>
+        <div class="method-desc">Tested the workflow across hypothetical case scenarios representing diverse presenting concerns, psychosocial contexts, and risk profiles. Evaluated output quality, consistency, and failure modes.</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">⚖️</div>
+        <div class="method-name">Risk and Safeguard Analysis</div>
+        <div class="method-desc">Systematically identified risks — including privacy, bias, hallucination, overreliance, and accountability — and developed safeguard protocols for each identified risk category.</div>
+      </div>
+    </div>
+
+    <div class="note mt3">The biopsychosocial model was selected as the organizing framework because it aligns with social work training, provides structured reasoning scaffolding across biological, psychological, and social/environmental domains, and supports person-in-environment assessment.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — WORKFLOW ARCHITECTURE
+════════════════════════════════════════════ -->
+<section id="workflow">
+  <div class="container">
+    <div class="section-num">04 — Workflow Architecture</div>
+    <h2>Agent Pipeline</h2>
+
+    <p>The workflow was designed as a staged, modular pipeline — eight specialized agents, each performing a defined function within the assessment process. The architecture separates information structuring from clinical interpretation, ensuring that AI outputs function as drafts and suggestions requiring clinician verification at every stage.</p>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">01 — 📝 ChartScribe — Intake Documentation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Convert structured intake notes into organized clinical documentation language following IBHA section order.</p>
+        <h4>Inputs</h4>
+        <p>De-identified structured clinical notes, symptom descriptions, risk findings, psychosocial context, client goals, treatment history.</p>
+        <h4>Outputs</h4>
+        <p>Structured clinical narrative organized by IBHA section, clear clinical phrasing, content ready for record entry.</p>
+        <h4>Constraints</h4>
+        <p>Maintain neutral professional tone, avoid unnecessary repetition, highlight clinically relevant information, preserve original meaning without interpretive additions.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">02 — 🚦 Risk Radar — Risk and Safety Structuring</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Organize safety-relevant information into structured risk categories. Flags areas requiring immediate clinical attention.</p>
+        <h4>Key Boundary</h4>
+        <p>All risk determinations require human confirmation — AI does not make safety decisions, assess risk level, or generate safety plans.</p>
+        <h4>Outputs</h4>
+        <p>Structured risk information organized by domain (self-harm, violence, substance, environmental).</p>
+        <h4>Constraints</h4>
+        <p>AI organizes and surfaces risk-relevant information but never evaluates risk severity or recommends intervention level.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">03 — 🧠 Dx Compass — Diagnostic Reasoning Support</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Surface diagnostic considerations consistent with presented information. Uses "consistent with" language — never diagnostic labeling.</p>
+        <h4>Outputs</h4>
+        <p>Criteria considerations requiring further assessment, differential reasoning prompts, areas where additional information would clarify clinical picture.</p>
+        <h4>Constraints</h4>
+        <p>Hypotheses only — no diagnostic conclusions. AI identifies patterns consistent with diagnostic categories but does not diagnose. All output requires clinician interpretation.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">04 — 🧩 Formulation Loom — Biopsychosocial Formulation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Synthesize intake information into biological, psychological, and social/environmental factors.</p>
+        <h4>Outputs</h4>
+        <p>Biopsychosocial factor organization, maintaining factors and feedback loops (if evident), strengths and protective factors, working hypotheses to investigate, 3–5 clarifying questions for next session.</p>
+        <h4>Constraints</h4>
+        <p>Begin with "why now" summary. Distinguish facts from hypotheses. Use "consistent with" language. Identify maintaining factors connecting symptoms, context, and behaviors. Close with strengths and clarifying questions.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">05 — 📊 Function Focus — Functional Impairment Clarification</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Structure information about functional impacts across daily living, occupational, social, and self-care domains.</p>
+        <h4>Outputs</h4>
+        <p>Organized functional impairment summary, areas where additional assessment is needed, severity indicators based on reported information.</p>
+        <h4>Constraints</h4>
+        <p>Use only provided information. Flag areas where functional data is insufficient rather than inferring from symptoms.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">06 — 🧾 Summary Signal — Narrative Clinical Summary</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Translate structured reasoning into readable narrative documentation suitable for clinical records and care coordination.</p>
+        <h4>Outputs</h4>
+        <p>Coherent clinical narrative integrating presenting concern, history, formulation, and treatment direction.</p>
+        <h4>Constraints</h4>
+        <p>Maintain clinical tone, integrate rather than repeat information, organize for readability by other providers.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">07 — 🗺️ Plan Pathfinder — Treatment Planning Support</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Generate strengths-oriented treatment goal suggestions based on identified needs, presenting concerns, and client-stated goals.</p>
+        <h4>Outputs</h4>
+        <p>Suggested treatment goals organized by domain, strengths to build on, intervention direction considerations.</p>
+        <h4>Constraints</h4>
+        <p>All suggestions require clinician review and modification. Goals framed in client language where possible. Strengths-oriented rather than deficit-oriented.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">08 — 📬 Coordination Courier — Care Coordination</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Generate referral prompts, resource suggestions, and follow-up coordination notes.</p>
+        <h4>Outputs</h4>
+        <p>Referral prompts for identified needs, resource suggestions, coordination documentation drafts.</p>
+        <h4>Constraints</h4>
+        <p>All referral information must be verified for current availability and appropriateness. AI does not make referral decisions — it surfaces options for clinician review.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card-accent4">
+      <p><strong style="color:var(--accent4);">Final Step — Clinician Review and Authorization:</strong> Every output from every agent is a draft requiring clinician review, editing, and authorization. The clinician is the decision-maker at every stage. AI provides structured support — never final determinations.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Explicit Boundaries</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>No Diagnosis</h4>
+        <p style="font-size:0.82rem; margin:0;">AI surfaces considerations using hypothesis language — it does not diagnose</p>
+      </div>
+      <div class="card">
+        <h4>No Safety Decisions</h4>
+        <p style="font-size:0.82rem; margin:0;">All risk flags require human confirmation and clinical judgment</p>
+      </div>
+      <div class="card">
+        <h4>No Replacement</h4>
+        <p style="font-size:0.82rem; margin:0;">Outputs are drafts and suggestions, not conclusions</p>
+      </div>
+      <div class="card">
+        <h4>No Fabrication</h4>
+        <p style="font-size:0.82rem; margin:0;">Constrained to provided information — "unknown" preferred over speculation</p>
+      </div>
+      <div class="card">
+        <h4>No Data Persistence</h4>
+        <p style="font-size:0.82rem; margin:0;">Privacy-first assumption — no cross-session data storage or reuse</p>
+      </div>
+      <div class="card">
+        <h4>No Client Contact</h4>
+        <p style="font-size:0.82rem; margin:0;">All client-facing interaction remains with the clinician</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">05 — Key Insights</div>
+    <h2>Research Insights</h2>
+
+    <div class="note mb2">Framed as observations from experimental testing with hypothetical cases — not as validated empirical claims.</div>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">AI is most effective as reasoning infrastructure, not as a decision-maker</div>
+          <div class="insight-desc">The strongest value emerged when the system functioned as cognitive scaffolding — organizing information, surfacing gaps, structuring documentation, and generating hypotheses — rather than producing standalone conclusions. When AI structures the reasoning environment, clinicians can allocate more attention to the relational and interpretive dimensions of clinical work.</div>
+          <span class="insight-tag">Reasoning Scaffolding</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Structured prompts are the primary safeguard mechanism</div>
+          <div class="insight-desc">Output quality and safety depend more on prompt architecture than on model capability. Role definitions, input constraints, reasoning guardrails, and output format specifications function as the first line of defense against hallucination, interpretive overreach, and unauthorized clinical claims. Prompt design is safety design.</div>
+          <span class="insight-tag">Safety Architecture</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Separating facts from hypotheses is essential and achievable</div>
+          <div class="insight-desc">The biopsychosocial formulation agent was explicitly instructed to distinguish observed facts from clinical hypotheses. This separation — treating hypotheses as questions to investigate rather than conclusions to document — preserves clinician interpretive authority while still allowing AI to contribute to formulation reasoning.</div>
+          <span class="insight-tag">Clinical Reasoning</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Documentation burden is a systems problem, not an individual performance problem</div>
+          <div class="insight-desc">The cognitive load associated with clinical documentation is a structural feature of service delivery systems that require practitioners to simultaneously maintain therapeutic engagement, clinical reasoning, risk assessment, and administrative documentation. AI-supported workflow redesign addresses a systems-level bottleneck.</div>
+          <span class="insight-tag">Systems Thinking</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">The workflow pattern is transferable across service delivery contexts</div>
+          <div class="insight-desc">The core architecture — structured domain framework + constrained reasoning prompts + modular agent roles + human oversight authority — could be applied to case conceptualization, progress documentation, school-based assessment, rehabilitation planning, or community health screening with appropriate domain modifications.</div>
+          <span class="insight-tag">Transferability</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — ETHICAL SAFEGUARDS
+════════════════════════════════════════════ -->
+<section id="safeguards">
+  <div class="container">
+    <div class="section-num">06 — Ethical Considerations &amp; Safeguards</div>
+    <h2>Safeguard Architecture</h2>
+
+    <p>Any integration of AI into clinical service delivery raises significant ethical concerns. The following safeguards were embedded in the experimental workflow design and would be required in any applied implementation.</p>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Privacy &amp; Minimum Necessary Data</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Only de-identified, structured intake data enters the AI workflow. No personally identifying information is processed. No cross-session data persistence. Privacy-first assumption at every stage. In applied implementation, data handling would require full HIPAA compliance review and institutional data governance approval.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Bias &amp; Equity Monitoring</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Prompts include instructions to avoid demographic assumptions. Output is reviewed for language that may reflect or reinforce systemic bias — including pathologizing normative stress responses to structural conditions, underweighting environmental stressors, or overweighting individual pathology. Cultural context is treated as essential assessment information, not as noise to be controlled.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Transparency &amp; Documentation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>All AI-assisted outputs are clearly labeled as AI-generated drafts. In applied implementation, clinical records would document which portions were AI-supported and which reflect direct clinician judgment. Transparency is both an ethical requirement and a quality assurance mechanism.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Hallucination Prevention</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>AI is restricted to provided intake information only. Prompts enforce "unknown" or "insufficient information" language over speculation. Hypotheses are explicitly labeled as hypotheses. No diagnostic claims are permitted. Structured output formats reduce the opportunity for generative narrative drift. These constraints are the primary mechanism through which output reliability is maintained.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Risk &amp; Safety Content</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>All risk and safety determinations require human clinical judgment. AI may organize risk-relevant information but does not assess risk level, generate safety plans, or determine level of care. Content involving self-harm, suicidal ideation, or violence triggers immediate escalation to the clinician — no automated response, no autonomous assessment. This boundary is non-negotiable.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Clinician Oversight &amp; Accountability</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Every AI output is a draft requiring clinician review, editing, and authorization. The clinician is legally, ethically, and professionally responsible for all clinical decisions and documentation. AI is a tool within the clinician's workflow — not a parallel decision-maker.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Informed Consent</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>If AI-assisted workflows were used in actual service delivery, clients would be informed that AI tools support documentation and clinical reasoning, with clear explanation of what AI does and does not do. Consent processes would be developed in collaboration with ethics review and adapted for the specific client population and service context.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Auditability &amp; Version Tracking</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>In applied implementation, all AI-generated outputs would be version-tracked with timestamps, prompt versions, and clinician review status — supporting audit, supervision, quality assurance, and institutional accountability processes.</p>
+      </div>
+    </div>
+
+    <div class="card-accent4 mt3">
+      <p>Ethical boundaries are not constraints on the system — they are design requirements. A clinical AI workflow without robust safeguards is not a faster system; it is a more dangerous one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — PRACTICE IMPLICATIONS
+════════════════════════════════════════════ -->
+<section id="implications">
+  <div class="container">
+    <div class="section-num">07 — Implications for Practice &amp; Service Delivery</div>
+    <h2>Service Delivery Implications</h2>
+
+    <p>If validated through rigorous testing and ethical review, structured AI workflows could have several implications for behavioral health service delivery.</p>
+
+    <div class="grid-3 mt3">
+      <div class="card">
+        <h4>Cognitive Load Reduction</h4>
+        <p style="font-size:0.82rem; margin:0;">Structuring information organization and documentation tasks could reduce cognitive switching burden on clinicians — freeing attentional resources for therapeutic engagement, clinical reasoning, and relational attunement.</p>
+      </div>
+      <div class="card">
+        <h4>Documentation Consistency</h4>
+        <p style="font-size:0.82rem; margin:0;">Standardized agent-based documentation could improve consistency across clinicians, supporting continuity of care when clients transition between providers or service settings.</p>
+      </div>
+      <div class="card">
+        <h4>Assessment Coverage</h4>
+        <p style="font-size:0.82rem; margin:0;">Structured agents tracking which assessment domains have been addressed could reduce information omission risk — particularly for complex, multi-domain presentations.</p>
+      </div>
+      <div class="card">
+        <h4>Workforce Support</h4>
+        <p style="font-size:0.82rem; margin:0;">In settings with high caseloads and limited supervision capacity, structured AI support could function as practice infrastructure — not replacing training, but providing consistent scaffolding.</p>
+      </div>
+      <div class="card">
+        <h4>Training &amp; Supervision</h4>
+        <p style="font-size:0.82rem; margin:0;">AI-generated formulation drafts could serve as learning scaffolds for trainees — structured examples of biopsychosocial reasoning that supervisors can review, critique, and refine collaboratively.</p>
+      </div>
+      <div class="card">
+        <h4>Prevention Orientation</h4>
+        <p style="font-size:0.82rem; margin:0;">Reduced documentation burden and improved assessment coverage could support earlier identification of upstream risk factors, social determinants, and environmental stressors.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — HYPOTHETICAL CASE ILLUSTRATIONS
+════════════════════════════════════════════ -->
+<section id="cases">
+  <div class="container">
+    <div class="section-num">08 — Hypothetical Case Illustrations</div>
+    <h2>Applied Walkthroughs</h2>
+
+    <div class="note mb2">These are entirely hypothetical and de-identified. They illustrate how the workflow would function — what AI drafted, what was left for human judgment, and what risks were considered.</div>
+
+    <!-- Case A -->
+    <div class="case-card mt3">
+      <h3>Case A — Adult with Housing Instability, Trauma History, and Difficulty Sustaining Care Engagement</h3>
+
+      <div class="expandable open">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Presenting Context (Person-in-Environment)</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>A 34-year-old individual presenting with depressive symptoms, sleep disruption, and difficulty sustaining engagement with outpatient services. Reports history of childhood adverse experiences, two prior episodes of housing instability, and current precarious housing situation. Employment is inconsistent. Reports distrust of institutional services based on prior negative experiences. Few stable social supports. Expresses desire for "things to feel manageable" but has missed several prior appointments.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">What the AI-Assisted Workflow Helped Draft</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Structured intake documentation organized by IBHA section (ChartScribe). Risk flags for housing instability and prior trauma organized for clinician review (Risk Radar). Biopsychosocial formulation draft identifying maintaining factors: housing precarity → chronic stress → avoidance coping → disrupted engagement → reduced access to support → increased isolation (Formulation Loom). Strengths identified: client-stated motivation, prior periods of stable functioning, capacity for self-reflection. Treatment goal suggestions oriented around stabilization, engagement sustainability, and concrete environmental supports (Plan Pathfinder). Suggested follow-up questions targeting housing resources, trauma screening readiness, and engagement barriers. Referral prompts for housing case management and trauma-informed care options (Coordination Courier).</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">What Was Left for Human Judgment</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Trauma assessment timing — whether to screen now or build relational safety first. Clinical interpretation of engagement barriers — distinguishing avoidance from practical access problems. Risk assessment determination — AI organized risk-relevant information but did not assess risk level. Cultural and relational context not captured in intake notes. Treatment sequencing decisions requiring clinical judgment about readiness and priorities.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Risks Considered</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Bias risk: AI may underweight environmental stressors and overweight individual pathology if prompt constraints are insufficient. Missing context: intake notes may not capture the client's full experience of institutional distrust. Overconfidence risk: formulation draft may read as more certain than available evidence warrants. Engagement history: pattern of missed appointments requires human interpretation — AI cannot distinguish between avoidance, practical barriers, and rational distrust.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Case B -->
+    <div class="case-card">
+      <h3>Case B — Youth with Academic Pressure, Attendance Concerns, Anxiety, and Family Stress</h3>
+
+      <div class="expandable open">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Presenting Context (Person-in-Environment)</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>A 15-year-old student referred by school counselor for increasing absenteeism, academic decline, and reported anxiety symptoms. Family reports financial stress following a parental job loss. Student describes feeling "overwhelmed" and "behind" and reports difficulty sleeping. Previously strong academic performance. No prior behavioral health services. Cultural background includes expectations around educational achievement and family responsibility.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">What the AI-Assisted Workflow Helped Draft</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Structured intake documentation organizing school, family, and symptom information (ChartScribe). Functional impairment summary across academic, social, sleep, and family domains (Function Focus). Biopsychosocial formulation draft identifying maintaining factors: academic pressure + family financial stress → anxiety → avoidance of school → academic decline → increased pressure → increased anxiety feedback loop (Formulation Loom). Protective factors identified: prior academic competence, family cohesion, student's capacity to articulate distress. Suggested assessment questions targeting sleep patterns, peer relationships, and family communication about stress. Narrative clinical summary draft for school coordination (Summary Signal).</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">What Was Left for Human Judgment</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Assessment of cultural dynamics — how family expectations about education interact with the student's experience of pressure. Determination of whether anxiety symptoms meet clinical threshold or reflect normative stress response to environmental conditions. Decision about family involvement in treatment — timing, format, and appropriateness. School coordination strategy — what information to share and with whom.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Risks Considered</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Bias risk: AI may pathologize normative responses to environmental stressors (financial stress, academic pressure) if prompt constraints do not adequately distinguish environmental context from individual pathology. Developmental context: formulation tools designed for adult presentations may not adequately capture developmental dynamics. Family and cultural context: intake notes may not capture the family's understanding of the situation or cultural values that should inform treatment approach.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">09 — Reflection</div>
+    <h2>Scope &amp; Limitations</h2>
+
+    <div class="limitation-grid">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">This is an experimental conceptual exploration — not a validated system or a clinical recommendation. All testing used hypothetical cases.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Output quality depends heavily on input clarity and prompt architecture. The system requires significant upfront structuring effort.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The workflow has not been tested with real clinicians reviewing outputs for quality, accuracy, and clinical utility.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Ethical and privacy concerns have not been formally reviewed by an institutional review board or ethics committee.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The system may not be appropriate for all client populations, presenting concerns, or service delivery contexts without domain-specific adaptation.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Risk of overreliance — any AI-supported workflow must maintain conditions in which clinicians exercise independent judgment rather than deferring to AI-generated output.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">What This Project Demonstrates</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Practice Capabilities</h4>
+        <ul class="cap-list">
+          <li>Workflow design grounded in clinical reasoning frameworks</li>
+          <li>Understanding of ethical boundaries for AI in clinical contexts</li>
+          <li>Systems-level thinking about documentation burden and service delivery infrastructure</li>
+          <li>Person-in-environment perspective applied to technology integration</li>
+          <li>Prevention orientation — reduced burden enabling earlier risk identification</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Applied Thinking</h4>
+        <ul class="cap-list">
+          <li>Multi-agent architecture design with defined roles, inputs, and constraints</li>
+          <li>Structured prompt engineering with safety-first design principles</li>
+          <li>Bias and equity consideration integrated into workflow design</li>
+          <li>Transferable pattern: structured framework + constrained prompts + modular agents + human oversight</li>
+          <li>Translation of practice experience into infrastructure concepts</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">10 — Next Steps</div>
+    <h2>Future Directions</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Practitioner Review</h4>
+        <p>Testing workflow output with experienced clinicians for quality, accuracy, and clinical utility assessment — identifying where AI support adds value and where it introduces risk.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Reliability Testing</h4>
+        <p>Testing across diverse hypothetical cases representing varied presenting concerns, cultural backgrounds, and risk profiles — evaluating output consistency and identifying failure modes.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Ethical Review</h4>
+        <p>Formal evaluation of privacy, consent, bias, and accountability frameworks by institutional review or ethics committee — prerequisite for any move toward applied implementation.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Integration Feasibility</h4>
+        <p>Examining how AI workflows could interface with existing EHR systems, documentation requirements, and organizational workflows — identifying implementation constraints and adaptation requirements.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Selected Artifacts</h3>
+    <div class="card">
+      <ul class="artifact-list">
+        <li>Workflow map — staged eight-agent assessment pipeline with defined inputs, outputs, and oversight points</li>
+        <li>Prompt set / structured templates — agent instruction architectures for intake, formulation, risk structuring, treatment planning, and care coordination</li>
+        <li>Safeguard checklist — risk, bias, privacy, hallucination prevention, escalation, and accountability protocols</li>
+        <li>Agent architecture documentation — eight-agent library with role definitions, input/output specifications, and reasoning constraints</li>
+        <li>Hypothetical case walkthroughs (2) — illustrative applications demonstrating workflow function and human judgment boundaries</li>
+        <li>Implementation notes — constraints, failure modes, oversight model, and organizational adoption considerations</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">Experimental / Conceptual — Not validated for clinical deployment</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
