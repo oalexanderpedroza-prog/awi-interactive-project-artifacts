@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operation Break Free — Identity Transformation Case Study</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #c87b7b;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(200,123,123,0.07) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(200,123,123,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 520px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(200,123,123,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Model Flow / Pathway ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 560px;
+      padding: 1rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); position: relative; z-index: 1;
+    }
+    .model-node.accent4-border {
+      border-color: rgba(200,123,123,0.5);
+      background: rgba(200,123,123,0.05);
+    }
+    .model-node-title { font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 0.2rem; }
+    .model-node-sub { font-size: 0.8rem; color: var(--text-muted); }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(200,123,123,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; white-space: nowrap; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(200,123,123,0.1); color: var(--accent4); border: 1px solid rgba(200,123,123,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+    .text-muted { color: var(--text-muted); }
+
+    /* ── Comparison Cards ── */
+    .comparison-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .comparison-card h4 { margin-bottom: 0.8rem; }
+    .comparison-card h4.accent4-label { color: var(--accent4); }
+    .comparison-card p { font-size: 0.87rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+
+    /* ── Phase Cards ── */
+    .phase-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.5rem 1.6rem; border-left: 3px solid var(--accent4); margin-bottom: 1rem;
+    }
+    .phase-card:hover { background: var(--surface2); }
+    .phase-num {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 0.3rem;
+    }
+    .phase-name {
+      font-size: 1.25rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; letter-spacing: 0.04em;
+    }
+    .phase-objective { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.55; }
+    .phase-components { list-style: none; padding: 0; margin: 0 0 1rem 0; display: flex; flex-direction: column; gap: 0.3rem; }
+    .phase-components li {
+      font-size: 0.8rem; color: var(--text-dim); padding-left: 0.9rem; position: relative;
+    }
+    .phase-components li::before { content: '·'; position: absolute; left: 0; color: var(--accent4); }
+    .phase-identity-shift {
+      font-size: 0.82rem; font-style: italic; color: var(--accent4);
+      padding: 0.5rem 0.8rem; background: rgba(200,123,123,0.06);
+      border-radius: var(--radius); display: inline-block;
+      border: 1px solid rgba(200,123,123,0.15);
+    }
+
+    /* ── Pathway Component ── */
+    .pathway { display: flex; flex-direction: column; gap: 0; }
+    .pathway-step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .pathway-step-num {
+      font-size: 0.7rem; font-weight: 700; color: var(--accent4);
+      min-width: 28px; padding-top: 2px; letter-spacing: 0.06em;
+    }
+    .pathway-step-body {}
+    .pathway-step-title { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+    .pathway-step-desc { font-size: 0.8rem; color: var(--text-muted); }
+    .pathway-connector {
+      width: 1px; height: 20px; background: var(--border);
+      margin-left: 2rem; position: relative;
+    }
+    .pathway-connector::after {
+      content: '↓'; position: absolute; bottom: -7px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.75rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Synthesis / Insight Card ── */
+    .highlight-card {
+      padding: 1.4rem 1.6rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(200,123,123,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin-top: 1.5rem;
+    }
+    .highlight-card h3 { color: var(--text); margin-bottom: 0.6rem; }
+    .highlight-card p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Bullet list in card ── */
+    .bullet-list { list-style: none; padding: 0; margin: 0.5rem 0 0 0; display: flex; flex-direction: column; gap: 0.35rem; }
+    .bullet-list li {
+      font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 0.6rem; align-items: flex-start;
+    }
+    .bullet-list li span.dot { color: var(--text-dim); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand" style="color: var(--accent4);">OBF</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#problem">Problem</a></li>
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#testing">Testing</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">Behavioral Science · Identity Development · Prevention-Oriented Design</div>
+    <h1 class="hero-title">Operation<br/><em>Break Free</em></h1>
+    <p class="hero-subtitle">A mission-based identity transformation system helping people move from survival-mode functioning toward self-directed leadership through structured progression, peer accountability, and behavioral activation.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">Behavioral Science</span>
+      <span class="tag accent2">Identity Development</span>
+      <span class="tag accent3">Prevention-Oriented Design</span>
+      <span class="tag">Trauma-Informed</span>
+      <span class="tag">Applied Research</span>
+      <span class="tag">Lived Experience</span>
+    </div>
+    <div class="hero-statement">
+      Operation Break Free emerged from a direct observation: people carrying the heaviest psychological and environmental burdens — veterans, individuals with trauma histories, people navigating chronic adversity — are often the least likely to engage with the systems designed to help them. Not because they don't need support, but because those systems were never designed with their identities, cultures, and realities in mind. OBF explores whether structured, mission-framed, identity-safe programming can create conditions where growth becomes accessible to people who would never walk into a therapy office.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Is</h2>
+
+    <p>Operation Break Free is a mission-based identity transformation framework designed for populations navigating survival-mode functioning — chronic stress, trauma exposure, identity loss, and environments where emotional suppression and self-reliance are deeply normalized. The framework guides participants through a staged identity progression — from Survivor (recognizing adaptive patterns) through Warrior (building agency and discipline) to Leader (developing purpose-driven, contribution-oriented identity) — using structured coaching, peer accountability, behavioral activation, and narrative reconstruction.</p>
+
+    <p>The project is not a clinical intervention. It is not therapy, and it does not replace therapy. It is a non-clinical, evidence-informed identity development system designed to meet people in the language, framing, and cultural context that resonates with their lived experience — particularly populations for whom clinical framing activates stigma, guardedness, or identity threat.</p>
+
+    <p>OBF was developed iteratively across multiple years through direct lived experience, community-based experimentation, academic research, and practice-informed observation. It has been tested through fitness events, community gatherings, structured group sessions (Reclaim Circles), coaching and mentoring sessions, and conceptual development within behavioral science and social work academic contexts.</p>
+
+    <div class="divider"></div>
+
+    <div class="highlight-card">
+      <h3>The Recursive Insight</h3>
+      <p>OBF applies the same behavioral science principles it aims to activate in participants — environmental design, identity-consistent framing, reinforcement structures, progressive scaffolding, and social accountability — to the design of the intervention itself. The system is designed using the mechanisms it teaches.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — OBSERVED PROBLEM
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — The Problem</div>
+    <h2>Observed Problem</h2>
+
+    <p>A recurring pattern, observed across military culture, high-adversity communities, and populations with significant trauma exposure: the people experiencing the most acute psychological and environmental burden are often the least likely to seek or sustain engagement with existing support systems.</p>
+
+    <h3 class="mt3 mb2">Why People Don't Show Up</h3>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Identity threat</strong> — Seeking help is perceived as a signal of weakness, failure, or inability to cope. In military culture, Latinx culture, and other identity-protective environments, help-seeking directly contradicts core identity narratives.</div>
+      <div class="friction-level friction-high">High</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Stigma</strong> — Mental health services carry stigma that is not merely attitudinal but structural. Engagement with clinical systems can produce real consequences — social judgment, career risk, identity disruption.</div>
+      <div class="friction-level friction-high">High</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Clinical framing</strong> — Therapeutic language ('patient,' 'diagnosis,' 'disorder,' 'treatment') pathologizes what people experience as adaptation. Survival strategies that were functional in adverse environments get reframed as symptoms.</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Cultural misalignment</strong> — Existing support systems are often designed by and for populations whose cultural norms around emotional expression, vulnerability, and help-seeking differ from the populations most in need.</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Survival-mode functioning</strong> — Chronic stress and trauma produce behavioral patterns (hypervigilance, emotional suppression, self-reliance, guardedness) that are adaptive in threatening environments but become barriers to engagement with support systems designed for conditions of safety.</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor"><strong style="color:var(--text); font-weight:600;">Loss of mission and purpose</strong> — Particularly for veterans and people exiting structured environments, the loss of mission, role identity, and team belonging produces a vacuum that existing support systems rarely address.</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">The Core Observation</h3>
+    <div class="card" style="border-color: rgba(200,123,123,0.25); background: rgba(200,123,123,0.03);">
+      <p style="font-size:0.92rem; color:var(--text-muted); margin:0; line-height:1.7;">The problem is not that people are unwilling to grow, heal, or change. The problem is that the available pathways to growth require them to adopt an identity frame — patient, client, person-with-a-disorder — that contradicts the identity that kept them alive. What is needed is not better therapy. What is needed is an alternative pathway — one that is identity-safe, culturally resonant, structurally scaffolded, and framed in the language of strength rather than deficit.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — LIVED FOUNDATION
+════════════════════════════════════════════ -->
+<section id="lived-foundation">
+  <div class="container">
+    <div class="section-num">03 — Where This Came From</div>
+    <h2>Lived and Practice-Based Insight</h2>
+
+    <p>Operation Break Free did not originate from academic theory. It originated from lived experience and direct observation across three distinct contexts.</p>
+
+    <div class="mt3">
+      <div class="expandable open">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Growing Up First-Generation</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Growing up in a first-generation immigrant family where emotional distress was carried privately — where strength meant enduring without complaint, where vulnerability was a luxury the family could not afford, and where the expectation was to push through regardless of what you were carrying. This produced early familiarity with survival-mode functioning and with the identity costs of seeking help in environments where help-seeking signals weakness.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Serving as a Recon Marine</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Serving in Marine Reconnaissance — an environment where suppression was trained, toughness was identity, and the people most likely to be struggling were the last to say so. Watching trained, high-performing individuals fall apart in silence — not because they were weak, but because the culture provided no identity-safe pathway for processing what they were carrying. Understanding from the inside how military identity simultaneously builds resilience and blocks access to support.</p>
+        </div>
+      </div>
+
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Working in Behavioral Health</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Moving into social work and behavioral health practice — and observing the same pattern repeat in clinical settings. The people arriving at crisis did not arrive because they had exhausted all available support. They arrived because nothing available had ever felt like it was for them. Clinical systems were designed with different populations in mind. The intake forms, the diagnostic language, the therapeutic frames, the waiting rooms — all of it communicated: this is for people who are broken. And the people OBF is designed for do not see themselves as broken. They see themselves as survivors.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <p>The central question that emerged from these three contexts was not "how do we get people into therapy?" It was: "how do we create conditions where growth becomes accessible to people whose identity, culture, and lived experience make existing systems feel threatening, irrelevant, or pathologizing?"</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — CONCEPTUAL SHIFT
+════════════════════════════════════════════ -->
+<section id="conceptual-shift">
+  <div class="container">
+    <div class="section-num">04 — The Conceptual Shift</div>
+    <h2>What Changed the Approach</h2>
+
+    <p>The shift that produced OBF was a reframe of the problem from individual resistance to environmental design.</p>
+
+    <div class="grid-2 mt3">
+      <div class="comparison-card">
+        <h4 class="text-muted">CONVENTIONAL FRAMING</h4>
+        <p>The person is resistant. They lack motivation. They don't understand their need. The solution is to convince them to engage with existing systems — through outreach, education, or crisis intervention.</p>
+      </div>
+      <div class="comparison-card" style="border-color: rgba(200,123,123,0.25); background: rgba(200,123,123,0.03);">
+        <h4 class="accent4-label" style="color: var(--accent4); font-size:0.85rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.5rem;">OBF FRAMING</h4>
+        <p>The person is responding adaptively to an environment that never provided an identity-safe pathway to growth. The solution is to redesign the pathway — its framing, its language, its structure, its cultural logic — so that engagement becomes compatible with the identity that kept them alive.</p>
+      </div>
+    </div>
+
+    <p class="mt3">This reframe aligns with environmental and behavioral science perspectives: behavior is shaped more by the conditions surrounding it than by the intentions behind it. If the available pathways to growth are identity-threatening, people will not use them — regardless of how much they need to. The intervention target is not the person's motivation. It is the structure of the growth pathway itself.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — WHAT OBF BECAME
+════════════════════════════════════════════ -->
+<section id="framework">
+  <div class="container">
+    <div class="section-num">05 — What Operation Break Free Became</div>
+    <h2>The Framework</h2>
+
+    <p>Operation Break Free is a staged identity transformation framework — a structured progression designed to meet people in survival mode and walk them toward self-directed leadership through incremental, identity-consistent steps.</p>
+
+    <h3 class="mt3 mb2">Three-Phase Identity Progression</h3>
+
+    <div class="phase-card">
+      <div class="phase-num">PHASE 1</div>
+      <div class="phase-name">SURVIVOR</div>
+      <p class="phase-objective"><strong style="color:var(--text);">Objective: Awareness and stabilization.</strong> Recognize that survival strategies were adaptive — they worked. But recognize also that those strategies may no longer serve the conditions you now inhabit.</p>
+      <ul class="phase-components">
+        <li>Narrative reflection — understanding one's story without pathologizing it</li>
+        <li>Survival pattern identification — naming what was adaptive and what has become constraining</li>
+        <li>Emotional load mapping — making the invisible visible</li>
+        <li>Strengths recognition — what kept you alive is not weakness</li>
+        <li>Stabilization habits — small structures that rebuild consistency</li>
+      </ul>
+      <div class="phase-identity-shift">"I adapted in order to survive."</div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num">PHASE 2</div>
+      <div class="phase-name">WARRIOR</div>
+      <p class="phase-objective"><strong style="color:var(--text);">Objective: Agency and activation.</strong> Move from reactive patterns toward intentional action. Build the behavioral discipline that makes change sustainable.</p>
+      <ul class="phase-components">
+        <li>Behavioral activation — small, repeated actions that build evidence of agency</li>
+        <li>Habit formation — establishing identity-consistent routines</li>
+        <li>Pattern interruption — deliberately disrupting survival-mode defaults</li>
+        <li>Accountability systems — peer partnerships that create external structure</li>
+        <li>Challenge rituals — structured experiences that test and reinforce the new identity</li>
+      </ul>
+      <div class="phase-identity-shift">"I can exert influence on my own life."</div>
+    </div>
+
+    <div class="phase-card">
+      <div class="phase-num">PHASE 3</div>
+      <div class="phase-name">LEADER</div>
+      <p class="phase-objective"><strong style="color:var(--text);">Objective: Purpose and contribution.</strong> Extend agency beyond personal survival toward purpose-driven engagement with the world. The endpoint is not 'recovery' — it is leadership.</p>
+      <ul class="phase-components">
+        <li>Future identity development — envisioning who you are becoming</li>
+        <li>Values articulation — naming what matters and aligning behavior</li>
+        <li>Life mission definition — purpose beyond survival</li>
+        <li>Boundary formation — protecting the conditions that support growth</li>
+        <li>Strategic planning — systems thinking applied to one's own life</li>
+        <li>Contribution — the shift from self-focus to service</li>
+      </ul>
+      <div class="phase-identity-shift">"My actions extend beyond personal survival."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — THEORETICAL GROUNDING
+════════════════════════════════════════════ -->
+<section id="theory">
+  <div class="container">
+    <div class="section-num">06 — Theoretical and Practice Grounding</div>
+    <h2>Research Foundations</h2>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Post-Traumatic Growth</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Tedeschi and Calhoun (2004) documented that individuals exposed to significant adversity can experience meaningful positive psychological change — not despite their suffering, but through the process of struggling with it. OBF's framework is built on this foundation: the goal is not to eliminate the effects of adversity but to create structured conditions under which adversity can become a catalyst for identity development.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Narrative Identity Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>McAdams (2001) established that identity is constructed through the stories people tell about themselves. Survival narratives ('I endure'), growth narratives ('I am becoming'), and stagnation narratives ('I am stuck') produce different behavioral trajectories. OBF's staged progression explicitly targets narrative reconstruction — helping participants shift from survival narratives toward agency and purpose narratives through structured reflection and behavioral evidence.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Self-Determination Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Deci and Ryan (2000) identified autonomy, competence, and relatedness as fundamental psychological needs. OBF's design targets all three: autonomy through self-directed mission framing, competence through progressive behavioral activation ('Warrior reps'), and relatedness through peer accountability partnerships. The non-clinical framing is itself an autonomy-preserving design choice — participants are not patients receiving treatment but agents pursuing a mission.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Identity-Based Motivation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Oyserman (2009) demonstrated that people are more likely to engage in behaviors that are consistent with their identity self-concept. OBF's military-resonant language ('mission,' 'warrior,' 'operations') is not merely aesthetic — it is a behavioral science strategy. By framing growth in identity-consistent language, OBF reduces the identity threat that clinical framing produces and aligns the growth process with participants' existing self-concept.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Behavioral Activation and Habit Formation</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Wood and Neal (2007) established that behavior is driven more by contextual cuing and reinforcement than by conscious intention. OBF's 'Warrior reps' — small, repeated, identity-consistent actions — apply habit formation principles: consistent contextual cues, low-friction behavioral responses, and reinforcing outcomes that increase repetition probability. The accountability journal system structures the environmental conditions that support habit formation.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Mutual Aid and Collectivist Models</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Kropotkin's (1902) mutual aid tradition and contemporary peer support research document that support provided by people with shared lived experience produces different engagement dynamics than professional service delivery. OBF's peer accountability partnership model applies this principle: participants both receive and provide accountability, creating reciprocal structures that distribute the support function rather than concentrating it in a clinical authority.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — EXPERIMENTATION AND TESTING
+════════════════════════════════════════════ -->
+<section id="testing">
+  <div class="container">
+    <div class="section-num">07 — What Was Actually Tested</div>
+    <h2>Experimentation and Field Testing</h2>
+
+    <div class="note mb2">OBF has been tested through multiple formats across several years. The following describes what was actually implemented, not what is theorized. The testing was informal, iterative, and practice-based — not controlled or empirically validated.</div>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Community Fitness Events</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Physical fitness events designed as entry points — structured challenges that used physical activity as the engagement medium. These events tested whether mission-framed physical challenge could function as an identity-safe gateway to deeper engagement. Observation: participants who would never attend a support group showed up for a fitness challenge. The physical medium reduced the identity threat associated with emotional or psychological programming.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Reclaim Circles</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Structured group sessions — resembling group process but without clinical framing. Reclaim Circles used guided prompts, structured sharing protocols, and peer witnessing in small-group formats. These were tested primarily with veterans. Observation: the structured format reduced the ambiguity that produces guardedness in unstructured conversation. Participants disclosed more meaningfully when the structure made disclosure boundaries explicit and predictable.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Coaching and Mentoring Sessions</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>One-on-one and small-group coaching sessions applying the Survivor → Warrior → Leader framework. These sessions tested the staged progression in applied settings. Observation: the identity framing mattered significantly. Participants responded to 'warrior' and 'mission' language in ways they did not respond to 'goals' or 'wellness.' The identity-consistent framing appeared to activate engagement rather than resistance.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Workshops and Community Events</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Workshops combining presentation, guided reflection, and group activity. These tested whether the OBF framework could be communicated in condensed format and whether it resonated with diverse audiences. Observation: the framework translated well beyond the veteran population. Individuals from high-adversity backgrounds — including first-generation students, formerly incarcerated individuals, and people navigating economic hardship — recognized the survival-mode pattern and responded to the structured growth pathway.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Language and Framing Experiments</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Iterative testing of different language, framing, and entry points across formats. Tested clinical vs. non-clinical language, 'wellness' vs. 'mission' framing, individual vs. group entry, and different levels of emotional depth. Observation: clinical language consistently produced distance. Mission language consistently produced engagement. The framing was not cosmetic — it determined who showed up and how they participated.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Journal and Accountability Prototyping</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Early prototyping of the structured accountability journal system — including mission cycles, daily reflection prompts, behavioral tracking, and peer accountability meeting protocols. Observation: the journal structure provided behavioral scaffolding that participants could use independently between sessions. The accountability partnership structure — where each participant serves as an accountability partner for another — distributed the support function and created reciprocal investment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — FRAMEWORK EVOLUTION
+════════════════════════════════════════════ -->
+<section id="evolution">
+  <div class="container">
+    <div class="section-num">08 — How It Evolved</div>
+    <h2>Framework Evolution Over Time</h2>
+
+    <div class="pathway mt3">
+      <div class="pathway-step">
+        <div class="pathway-step-num">01</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title">Initial Observation</div>
+          <div class="pathway-step-desc">Personal and observed pattern: people in survival mode carry everything alone because nothing available feels safe, relevant, or identity-compatible</div>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">02</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title">Early Experiments</div>
+          <div class="pathway-step-desc">Community fitness events, informal group sessions, coaching conversations — testing what resonated and what produced resistance</div>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">03</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title">Reclaim Circles</div>
+          <div class="pathway-step-desc">Structured group sessions with veterans — testing whether guided prompts and peer witnessing could create conditions for disclosure and connection</div>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">04</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title">Language and Identity Framing</div>
+          <div class="pathway-step-desc">Discovery that mission-framed, identity-consistent language activated engagement while clinical language produced distance</div>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">05</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title">Staged Progression Model</div>
+          <div class="pathway-step-desc">Development of the Survivor → Warrior → Leader framework as a structured identity pathway with behavioral activation, accountability, and narrative reconstruction</div>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step" style="border-color: rgba(200,123,123,0.4); background: rgba(200,123,123,0.04);">
+        <div class="pathway-step-num">06</div>
+        <div class="pathway-step-body">
+          <div class="pathway-step-title" style="color: var(--accent4);">Current Architecture</div>
+          <div class="pathway-step-desc">Eight-session coaching model, accountability journal system, peer partnerships, mission cycles, and multi-format delivery vision (solo, buddy, team)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — CURRENT STRUCTURE
+════════════════════════════════════════════ -->
+<section id="structure">
+  <div class="container">
+    <div class="section-num">09 — Current Structure</div>
+    <h2>Delivery Architecture</h2>
+
+    <p>The current OBF architecture integrates multiple delivery components into a coherent system designed for scalability, facilitator consistency, and participant autonomy.</p>
+
+    <div class="grid-3 mt3">
+      <div class="card">
+        <h4>8-Session Coaching Model</h4>
+        <p style="font-size:0.82rem; margin:0;">Structured progression: Survivor Origins → Survivor Patterns → Warrior Identity Activation → Warrior Pattern Interruption → Warrior Systems Installation → Leader Vision Development → Leader Goal Structuring → Identity Integration</p>
+      </div>
+      <div class="card">
+        <h4>Accountability Journal</h4>
+        <p style="font-size:0.82rem; margin:0;">Physical journal with structured weekly mission cycles: mission definition, habit commitments, daily reflection prompts, emotional check-ins, behavioral reps, pattern interruption exercises, weekly accountability meeting protocols</p>
+      </div>
+      <div class="card">
+        <h4>Peer Accountability Partnerships</h4>
+        <p style="font-size:0.82rem; margin:0;">Dual structure: each participant completes a personal journal AND serves as accountability partner for another participant — creating reciprocal investment and distributed support</p>
+      </div>
+      <div class="card">
+        <h4>Mission Cycles</h4>
+        <p style="font-size:0.82rem; margin:0;">Weekly behavioral activation units: commitment → daily practice → reflection → accountability meeting → signature validation → next mission</p>
+      </div>
+      <div class="card">
+        <h4>Facilitator Protocol</h4>
+        <p style="font-size:0.82rem; margin:0;">Standardized session formats with scripted prompts enabling consistency across facilitators. Clear boundaries: guide process, not diagnose. Facilitate, not treat.</p>
+      </div>
+      <div class="card">
+        <h4>Multi-Format Vision</h4>
+        <p style="font-size:0.82rem; margin:0;">Solo (journal + digital companion), Buddy (paired accountability), Team (cohort-based with facilitator) — enabling participation at multiple access levels</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — WHY THIS FRAMING WORKS
+════════════════════════════════════════════ -->
+<section id="rationale">
+  <div class="container">
+    <div class="section-num">10 — Design Rationale</div>
+    <h2>Why This Framing Works</h2>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">Mission framing is not aesthetic — it is a behavioral mechanism</div>
+          <div class="insight-desc">Framing growth as a 'mission' rather than 'therapy' or 'self-improvement' activates identity-consistent motivation in populations for whom mission, discipline, and team are central identity constructs. The framing determines who shows up.</div>
+          <span class="insight-tag">Identity-Based Motivation</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Staged progression mirrors natural identity development</div>
+          <div class="insight-desc">The Survivor → Warrior → Leader sequence reflects developmental psychology and narrative identity research: people do not leap from survival to leadership. They progress through stabilization, activation, and purpose-finding in a sequence that each stage prepares them for.</div>
+          <span class="insight-tag">Developmental Design</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Structure reduces the ambiguity that produces guardedness</div>
+          <div class="insight-desc">Unstructured support creates uncertainty about what will be asked, how much to share, and what the consequences will be. OBF's structured prompts, clear boundaries, and predictable progression reduce the ambiguity that activates threat responses in guarded populations.</div>
+          <span class="insight-tag">Behavioral Scaffolding</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Peer accountability distributes the support function</div>
+          <div class="insight-desc">The dual accountability partnership — where each participant both receives and provides support — transforms the helping relationship from asymmetric (professional → client) to reciprocal (partner ↔ partner). This reduces the identity threat of being 'helped' and creates mutual investment.</div>
+          <span class="insight-tag">Mutual Aid</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">The endpoint is leadership, not recovery</div>
+          <div class="insight-desc">Framing the outcome as 'leader' rather than 'recovered' communicates that the process is not about returning to some prior baseline but about building something that did not previously exist. This forward-oriented framing is consistent with post-traumatic growth research and more motivationally compelling than recovery framing for the intended population.</div>
+          <span class="insight-tag">Post-Traumatic Growth</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">11 — Key Insights</div>
+    <h2>Research Insights</h2>
+
+    <div class="note mb2">Framed as observed patterns from iterative experimentation and practice-based inquiry.</div>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">The barrier to engagement is environmental, not motivational</div>
+          <div class="insight-desc">People in survival mode are not unmotivated. They are responding to environments that make growth feel dangerous. Redesigning the pathway — its language, structure, framing, and social architecture — is more effective than intensifying outreach to existing systems.</div>
+          <span class="insight-tag">Environmental Design</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Identity-consistent language is an access mechanism, not a marketing choice</div>
+          <div class="insight-desc">Mission language, warrior framing, and challenge orientation are not branding decisions. They are behavioral science interventions that determine whether the intended population perceives the pathway as identity-safe. Language is the first gate.</div>
+          <span class="insight-tag">Identity Safety</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Behavioral reps build identity evidence</div>
+          <div class="insight-desc">Small, repeated, identity-consistent actions ('Warrior reps') produce cumulative evidence that the new identity is real. Identity shifts are sustained not by insight alone but by behavioral evidence — the accumulation of actions consistent with the emerging self-concept.</div>
+          <span class="insight-tag">Behavioral Activation</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Narrative reconstruction requires both reflection and action</div>
+          <div class="insight-desc">Reflection alone produces insight without change. Action alone produces change without meaning. OBF's combination of structured journaling (reflection) and behavioral activation (action) addresses both — producing identity shifts grounded in both understanding and evidence.</div>
+          <span class="insight-tag">Narrative Identity</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">The framework transfers beyond the veteran population</div>
+          <div class="insight-desc">The survival-mode pattern is not unique to veterans. First-generation students, formerly incarcerated individuals, people navigating chronic poverty, and anyone from high-adversity, identity-protective environments recognizes the pattern. The framework's transferability suggests it addresses a structural phenomenon, not a population-specific one.</div>
+          <span class="insight-tag">Transferability</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12 — PREVENTION ORIENTATION
+════════════════════════════════════════════ -->
+<section id="prevention">
+  <div class="container">
+    <div class="section-num">12 — Prevention Logic</div>
+    <h2>Why This Is Prevention-Oriented</h2>
+
+    <p>OBF is not a crisis intervention. It is designed to intervene upstream — before survival-mode functioning produces the downstream outcomes (chronic depression, substance use, social isolation, suicidal ideation) that eventually bring people into crisis systems.</p>
+
+    <div class="grid-2 mt3">
+      <div class="card">
+        <h4>Upstream Engagement</h4>
+        <p style="font-size:0.82rem; margin:0;">OBF meets people while they are still functioning — still showing up, still working, still present in their communities — but carrying patterns that, without intervention, tend to compound over time.</p>
+      </div>
+      <div class="card">
+        <h4>Identity-Safe Access</h4>
+        <p style="font-size:0.82rem; margin:0;">By removing the identity barriers that prevent engagement with clinical systems, OBF creates an access pathway for populations that existing prevention infrastructure fails to reach.</p>
+      </div>
+      <div class="card" style="grid-column: 1 / -1;">
+        <h4>Behavioral Trajectory Modification</h4>
+        <p style="font-size:0.82rem; margin:0;">The staged progression targets the behavioral patterns (suppression, isolation, self-reliance, avoidance) that, if left unaddressed, produce the crisis-level outcomes that current systems are designed to respond to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     13 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">13 — Reflection</div>
+    <h2>Scope &amp; Limitations</h2>
+
+    <div class="limitation-grid mt3">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">OBF has been tested through informal, iterative, practice-based experimentation — not through controlled research or formal program evaluation.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Observed patterns are hypothesis-generating, not empirically validated. What appeared to work in practice-based settings requires systematic testing.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The framework has been tested primarily with veterans and high-adversity populations in community settings. Generalizability to other contexts requires examination.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The accountability journal and peer partnership system have been prototyped but not evaluated for completion rates, adherence patterns, or outcome effects.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Facilitator training requirements and fidelity standards have been conceptualized but not formally developed or tested.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The 90-day structured program with digital companion integration remains in development and has not yet been piloted as a complete system.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">What This Project Demonstrates</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Practice Capabilities</h4>
+        <ul class="bullet-list">
+          <li><span class="dot">·</span>Intervention design grounded in lived experience and behavioral science</li>
+          <li><span class="dot">·</span>Iterative testing across multiple delivery formats</li>
+          <li><span class="dot">·</span>Identity-informed framework development for hard-to-reach populations</li>
+          <li><span class="dot">·</span>Systems-level thinking about engagement barriers</li>
+          <li><span class="dot">·</span>Prevention orientation — intervening upstream</li>
+          <li><span class="dot">·</span>Trauma-informed design without clinical framing</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Applied Thinking</h4>
+        <ul class="bullet-list">
+          <li><span class="dot">·</span>Translation of behavioral science into structured growth pathways</li>
+          <li><span class="dot">·</span>Framework design that respects identity while supporting change</li>
+          <li><span class="dot">·</span>Multi-format delivery architecture (solo, buddy, team)</li>
+          <li><span class="dot">·</span>Peer accountability as distributed support infrastructure</li>
+          <li><span class="dot">·</span>Narrative reconstruction combined with behavioral activation</li>
+          <li><span class="dot">·</span>Cultural responsiveness as a design variable, not an afterthought</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     14 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">14 — Future Direction</div>
+    <h2>Next Steps</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card" style="border-color: rgba(200,123,123,0.25); background: rgba(200,123,123,0.03);">
+        <h4 class="accent4">90-Day Structured Program</h4>
+        <p>Developing the full 90-day version integrating the physical accountability journal, digital companion with QR-linked content, and three participation modes (solo, buddy, team).</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Facilitator Training Protocol</h4>
+        <p>Developing standardized facilitator training covering the Survivor → Warrior → Leader framework, session delivery, boundary management, and psychological safety maintenance.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Pilot Evaluation</h4>
+        <p>Designing and conducting a structured pilot with measurement of engagement, completion, identity progression markers, and participant-reported outcomes.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Population Expansion Research</h4>
+        <p>Testing the framework with additional populations — first-generation college students, formerly incarcerated individuals, individuals navigating chronic poverty — to assess transferability and adaptation requirements.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">Practice-Informed Intervention Design — Iteratively Tested, Not Empirically Validated</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
