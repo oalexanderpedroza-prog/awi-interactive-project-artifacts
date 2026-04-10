@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UX Research Operating System — Omar Alexander Pedroza</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #8a9ec8;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(138,158,200,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(138,158,200,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 560px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(138,158,200,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+    .card.accent4-border { border-color: rgba(138,158,200,0.4); background: rgba(138,158,200,0.03); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 768px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Method Cards ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(138,158,200,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body h4 { margin-top: 0.8rem; margin-bottom: 0.3rem; color: var(--accent4); }
+    .expandable-body h4:first-child { margin-top: 0; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Comparison Cards ── */
+    .comparison-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .comparison-card.accent4-border { border-color: rgba(138,158,200,0.4); background: rgba(138,158,200,0.03); }
+    .comparison-card h4.accent4 { color: var(--accent4); }
+    .comparison-items { font-size: 0.85rem; color: var(--text-muted); line-height: 1.9; }
+
+    /* ── Domain Cards ── */
+    .domain-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent4);
+      border-radius: var(--radius); padding: 1.2rem 1.4rem;
+    }
+    .domain-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.3rem; }
+    .domain-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; letter-spacing: 0.05em; text-transform: uppercase; }
+    .domain-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* ── AI Protocol Cards ── */
+    .protocol-card {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.6rem;
+      transition: border-color 0.2s;
+    }
+    .protocol-card:hover { border-color: rgba(138,158,200,0.3); }
+    .protocol-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .protocol-body {}
+    .protocol-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .protocol-desc { font-size: 0.82rem; color: var(--text-muted); }
+
+    /* ── Tool Stack Cards ── */
+    .tool-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+    }
+    .tool-card h4 { color: var(--accent4); margin-bottom: 0.35rem; }
+    .tool-card p { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+
+    /* ── AI Highlight Card ── */
+    .ai-highlight {
+      padding: 1.1rem 1.3rem;
+      background: var(--surface); border: 1px solid rgba(138,158,200,0.35);
+      border-radius: var(--radius); margin-top: 1rem;
+    }
+    .ai-highlight h4 { color: var(--accent4); margin-bottom: 0.4rem; }
+    .ai-highlight p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Mechanism Questions Card ── */
+    .mechanism-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 1.6rem;
+    }
+    .mechanism-row {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .mechanism-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .mechanism-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent4); min-width: 90px; padding-top: 2px; }
+    .mechanism-question { color: var(--text-muted); }
+
+    /* ── Code Block ── */
+    .code-block {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem 1.8rem;
+      font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
+      line-height: 1.9; overflow-x: auto;
+    }
+    .code-block .path-dir { color: var(--accent4); }
+    .code-block .path-comment { color: var(--text-dim); }
+
+    /* ── Week Grid ── */
+    .week-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+    }
+    @media (max-width: 640px) { .week-grid { grid-template-columns: 1fr; } }
+    .week-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .week-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.25rem; }
+    .week-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+    .week-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ── Signal Card ── */
+    .signal-card {
+      padding: 1.2rem 1.4rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .signal-card h4 { color: var(--text); margin-bottom: 0.5rem; }
+    .signal-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+    .signal-list li { font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 0.6rem; align-items: flex-start; }
+    .signal-dot { color: var(--text-dim); flex-shrink: 0; }
+
+    /* ── Portfolio Signal Cards ── */
+    .portfolio-card {
+      padding: 1.3rem 1.4rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .portfolio-card h4 { color: var(--accent4); margin-bottom: 0.5rem; }
+    .portfolio-card p { font-size: 0.83rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Quick-skim summary cards ── */
+    .skim-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.1rem 1.2rem;
+    }
+    .skim-card h4 { color: var(--accent4); margin-bottom: 0.4rem; }
+    .skim-card p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Personal note card ── */
+    .personal-note {
+      padding: 1.3rem 1.5rem;
+      background: rgba(138,158,200,0.03);
+      border: 1px solid rgba(138,158,200,0.35);
+      border-radius: var(--radius);
+      font-style: italic;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">UXR-OS</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#methods">Methods</a></li>
+    <li><a href="#ai-protocol">AI Protocol</a></li>
+    <li><a href="#artifacts">Artifacts</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">UX Research · Behavioral Science · Systems Thinking</div>
+    <h1 class="hero-title">UX Research<br/><em>Operating System</em></h1>
+    <p class="hero-subtitle">How I approach end-to-end research — integrating behavioral science alongside standard UX practices to surface not only whether an experience works, but what kinds of patterns and human outcomes it may support over time.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">UX Research</span>
+      <span class="tag accent2">Behavioral Science</span>
+      <span class="tag accent3">Systems Thinking</span>
+      <span class="tag">Mixed Methods</span>
+      <span class="tag">Human Outcomes</span>
+      <span class="tag">Research Operations</span>
+    </div>
+    <div class="hero-statement">
+      Standard UX research asks essential questions: Is this product usable? Does it meet user needs? Does it perform well? In my work, I try to integrate an additional layer of inquiry: What behavioral patterns might this product produce over time? What mechanisms might be driving those patterns? What could the downstream effects be on attention, cognition, emotional experience, and perceived agency? These are not replacements for traditional evaluation — they are additional questions I find useful to carry alongside it.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FRAMING STATEMENT
+════════════════════════════════════════════ -->
+<section id="framing">
+  <div class="container">
+    <div class="section-num">— Personal Framing</div>
+    <h2>About This Artifact</h2>
+
+    <div class="card accent4-border mb2">
+      <p>This research operating system reflects my personal approach to UX research, shaped by training in behavioral health and systems-oriented social science. It builds on standard UX methods while incorporating questions I often find important when evaluating products: not only whether an experience works, but what kinds of behavioral patterns and human outcomes it may support over time.</p>
+      <p>I recognize that this perspective is one of many valid lenses within UX research. My intention is not to replace established practices, but to make explicit the additional considerations that guide how I frame research questions and interpret findings.</p>
+    </div>
+
+    <!-- Where This Perspective Comes From -->
+    <div class="expandable mt3">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Where This Perspective Comes From</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>My approach to research has been shaped by training in behavioral health and systems-oriented social science, alongside developing practical UX research skills. Growing up in a first-generation immigrant family, serving as a Recon Marine, and working in behavioral health settings gave me early exposure to how powerfully environments, structures, and conditions shape how people think, adapt, and function over time. These experiences inform the questions I bring to UX research — particularly the question of what happens to people beyond the immediate interaction, and whether the patterns a product produces over repeated use are ones the team intended.</p>
+      </div>
+    </div>
+
+    <!-- How This Maps to Standard UX Research -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">How This Maps to Standard UX Research</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Standard Research Phases</h4>
+        <p>Discovery research → Phases 1–3 (framing, background, study design)<br/>
+        Evaluative research → Phases 4–6 (instruments, fieldwork, synthesis)<br/>
+        Strategic research → Phase 7 (product implications and roadmap influence)<br/>
+        Research operations → Phases 0 and 8 (infrastructure setup and knowledge capture)</p>
+        <h4>Behavioral Science Layer</h4>
+        <p>The behavioral science extensions are layered on top of these standard phases, not substituted for them. In projects where the behavioral lens isn't relevant, the standard phases function independently.</p>
+      </div>
+    </div>
+
+    <!-- Quick-skim summary -->
+    <div class="section-num mt4" style="margin-bottom: 0.8rem;">— What You'll Find in This Document</div>
+    <div class="grid-3 mt2">
+      <div class="skim-card">
+        <h4>Research Scoping</h4>
+        <p>Framing questions, aligning stakeholders, and defining what we need to learn</p>
+      </div>
+      <div class="skim-card">
+        <h4>Mixed Methods</h4>
+        <p>Selecting and combining qualitative, quantitative, and behavioral observation approaches</p>
+      </div>
+      <div class="skim-card">
+        <h4>Behavioral Reasoning</h4>
+        <p>Identifying mechanisms, feedback loops, and human outcome patterns in product interactions</p>
+      </div>
+      <div class="skim-card">
+        <h4>Synthesis Structure</h4>
+        <p>Moving from observations to evidence-backed insights with verification protocols</p>
+      </div>
+      <div class="skim-card">
+        <h4>Stakeholder Alignment</h4>
+        <p>Connecting findings to product decisions, design principles, and roadmap priorities</p>
+      </div>
+      <div class="skim-card">
+        <h4>Research Operations</h4>
+        <p>Repository infrastructure, tagging systems, and institutional knowledge capture</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — What This Is</div>
+    <h2>Research Philosophy</h2>
+
+    <p>In my work, I try to integrate behavioral science reasoning into the standard UX research workflow — not to replace any of the core methods that make UX research effective, but to add a layer of inquiry that I often find useful alongside traditional evaluation.</p>
+
+    <p>Standard UX research asks: Does this work? Is it usable? Do people like it? The additional questions I often explore are: What behavioral patterns might this produce? What mechanisms could be driving those patterns? What might the downstream effects be on attention, cognition, emotion, social experience, and perceived agency? Are those effects intended or emergent?</p>
+
+    <p>The goal of this process is to support two layers of insight simultaneously: the traditional UX layer (usability, satisfaction, task performance) and the behavioral science layer (mechanisms, feedback loops, human outcome trajectories). Both layers can inform product decisions. Neither replaces the other.</p>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Two Orientations, Working Together</h3>
+
+    <div class="grid-2">
+      <div class="comparison-card">
+        <h4 class="accent4">Core UX Research Practices</h4>
+        <div class="comparison-items">
+          Usability evaluation · Task performance · User satisfaction · Engagement patterns · Pain point identification · Feature prioritization
+        </div>
+      </div>
+      <div class="comparison-card accent4-border">
+        <h4 class="accent4">Additional Questions I Often Explore</h4>
+        <div class="comparison-items" style="color: var(--text-muted);">
+          What behavioral mechanisms might be at work? · How might cognitive load be distributed? · What feedback loops could form with repeated use? · What might the downstream effects be on attention, social experience, or perceived agency?
+        </div>
+      </div>
+    </div>
+
+    <div class="note mt3">These are not competing approaches. The additional questions I explore build on and complement standard UX research methods. In many projects, the standard methods are exactly what's needed. The behavioral science lens is most useful when products influence habits, shape attention, affect emotional experience, or mediate social interaction over repeated use.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     HOW TO READ THIS PAGE
+════════════════════════════════════════════ -->
+<section id="how-to-read">
+  <div class="container">
+    <div class="section-num">— How to Read This Page</div>
+
+    <div class="card mt2">
+      <p>This page documents how I currently structure my research thinking. It is not intended as a rigid sequence of steps. In practice, research moves iteratively between phases depending on product needs, timeline constraints, and organizational context.</p>
+      <p>The behavioral science components are optional lenses that may or may not be relevant depending on project scope. Many UX research questions can and should be answered efficiently using standard evaluative methods. This lens is most useful when products influence habits, shape attention patterns, affect emotional experience, mediate social interaction, or influence decision-making environments.</p>
+      <p style="margin-bottom: 0;">I share this framework to make my thinking transparent and to invite dialogue with other researchers and designers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — PROCESS ARCHITECTURE
+════════════════════════════════════════════ -->
+<section id="process">
+  <div class="container">
+    <div class="section-num">02 — End-to-End Process</div>
+    <h2>Nine-Phase Research Cycle</h2>
+
+    <p>The framework follows a nine-phase cycle. Phases 0–8 cover the complete research arc from infrastructure setup through knowledge capture. Each phase includes both standard UX research actions and behavioral science extensions — the extensions are there when relevant, and can be set aside when they're not.</p>
+
+    <!-- Phase 0 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 0 — Research Operations Setup</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Create infrastructure enabling continuous research across product iterations.</p>
+        <h4>Standard Actions</h4>
+        <p>Repository structure, tagging taxonomy, consent protocols, tool configuration, stakeholder mapping.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I find it useful to define human outcome domains relevant to the product category early, so they're in mind throughout. This includes establishing behavioral mechanism tagging alongside standard UX tags, and creating clear AI usage boundaries — AI generates candidates, not conclusions. Defining what "verified finding" means up front (2+ evidence sources, counterexample documentation, traceability to raw data, human sign-off) helps keep synthesis honest later.</p>
+        <h4>Key Deliverables</h4>
+        <p>Repository structure, tagging taxonomy, AI verification protocol, decision log format, privacy/legal alignment.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant — understanding how AI writing assistance influences thinking clarity, confidence, and cognitive effort.</em></p>
+        <p>Scenario: Team wants to understand how AI writing assistance influences thinking clarity, confidence, and cognitive effort during writing tasks.<br/>
+        Human outcome domains relevant to this product category: attention quality, cognitive load, perceived competence, perceived authorship, learning effects, overreliance risk.<br/>
+        Mechanism hypotheses to track: AI autocomplete may reduce cognitive effort but also reduce memory encoding; suggestions may shape writing style convergence; rapid output may increase productivity but reduce reflective processing.<br/>
+        AI boundary: AI outputs treated as stimuli for observation, not as data sources. Human interpretation is the primary signal.</p>
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 1 — Project Framing &amp; Stakeholder Alignment</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Convert a product team's question into a research-ready investigation.</p>
+        <h4>Standard Actions</h4>
+        <p>Review prior research and product roadmap. Run assumptions workshop with PM, design, engineering. Surface risk vs. uncertainty. Define research questions and success metrics.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>Alongside standard research questions, I try to frame mechanism questions: What behavioral patterns might this product feature produce? What reinforcement structures may be embedded in the design? What cognitive load characteristics does the interaction environment create? What feedback loops might form with repeated use? An "assumptions about human behavior" exercise — surfacing what the team assumes about how users will respond — often surfaces interesting gaps between intended and emergent effects.</p>
+        <h4>Key Deliverables</h4>
+        <p>Research brief, hypothesis statements, decision log entry, risk-uncertainty map, behavioral mechanism hypotheses.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Stakeholder question: "Does AI writing assistance improve productivity?"<br/>
+        Expanded framing: What behavioral patterns emerge when users rely on AI suggestions? What happens to perceived authorship? Does suggestion timing influence idea diversity?<br/>
+        Mechanism hypotheses: automation complacency, cognitive offloading, confidence calibration shifts, editing loop compression, idea fixation from early suggestions.<br/>
+        Research questions formed: How does AI suggestion timing influence perceived authorship? Do users critically evaluate suggestions or accept default phrasing? Does AI assistance reduce ideation diversity?</p>
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 2 — Background Research</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Build a grounded understanding of the problem space before designing the study.</p>
+        <h4>Standard Actions</h4>
+        <p>Review existing research, competitive analysis, analytics data, support tickets, prior findings.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I find it useful to review relevant behavioral science literature — cognitive load, attention, habit formation, social comparison, feedback dynamics — as they relate to the product domain. Using AI to cluster sources by mechanism relevance can accelerate this, though I then manually validate those clusters. The goal is to map what is known, what is hypothesized, and what is genuinely unknown about how this type of product may influence human behavior.</p>
+        <h4>Key Deliverables</h4>
+        <p>Landscape synthesis document, literature clusters, mechanism-domain mapping, knowledge gap identification.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Relevant behavioral science constructs: cognitive load theory, automation bias, decision fatigue, effort justification, creativity constraint effects, choice architecture.<br/>
+        Known patterns from literature: people often accept default suggestions; early suggestions anchor later thinking; perceived fluency can be mistaken for quality.<br/>
+        Knowledge gaps identified: how AI affects reflective writing depth; longitudinal skill development effects.</p>
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 3 — Study Design</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Select defensible methods based on the research questions, product maturity, and cost of being wrong.</p>
+        <h4>Standard Actions</h4>
+        <p>Match questions to methods (interviews, usability testing, survey, diary study, analytics, A/B test). Define segments, sample plan, recruitment strategy. Set timeline and feasibility constraints.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>For each research question, I try to identify whether it requires behavioral observation, self-report, or both. Adding behavioral signal capture to the protocol — identifying what observable behaviors would indicate mechanism activation — helps ensure the study is designed to see what we're actually curious about. Where validated instruments exist (NASA-TLX for cognitive load, PANAS for affect), I try to incorporate them to support comparability across studies.</p>
+        <h4>Key Deliverables</h4>
+        <p>Research plan, sample plan, recruitment screener, method justification document, behavioral signal protocol.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Method selection: mixed methods — usability sessions observing writing behavior, think-aloud protocol, NASA-TLX cognitive load measure, follow-up reflection interview.<br/>
+        Behavioral signal capture plan: time to first edit, frequency of suggestion acceptance, revision depth, divergence from initial AI suggestions, self-reported ownership feeling.</p>
+      </div>
+    </div>
+
+    <!-- Phase 4 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 4 — Instrument Design</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Build the smallest, clearest set of research materials needed to generate the right signal.</p>
+        <h4>Standard Actions</h4>
+        <p>Draft discussion guide, usability tasks, survey instruments. Define success criteria and metrics. Pilot test with internal participants. Revise for clarity, fatigue, and timing.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I try to add mechanism-probing questions to the discussion guide — questions that surface not just what happened but what behavioral or cognitive dynamic might have driven it. Debrief questions targeting perceived cognitive load, perceived control, and emotional response can reveal dimensions that task completion data alone won't show. I also pilot specifically to check whether behavioral signals are actually observable within the protocol as designed.</p>
+        <h4>Key Deliverables</h4>
+        <p>Discussion guide, usability protocol, survey instrument, behavioral observation sheet, version-controlled final materials.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Mechanism-probing questions added: "How much of this text feels like your own thinking?" "When did you feel most mentally effortful?" "Did the AI suggestions change what you wanted to say?"<br/>
+        Task scenario: Participant writes a short analytical paragraph with AI assistance enabled.<br/>
+        Observation targets: hesitation before accepting suggestions, rapid acceptance patterns, editing behavior after suggestion insertion.</p>
+      </div>
+    </div>
+
+    <!-- Phase 5 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 5 — Fieldwork</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Capture real behavior in conditions that approximate real use.</p>
+        <h4>Standard Actions</h4>
+        <p>Conduct moderated or unmoderated sessions. Collect video, audio, screen recordings, task performance data, survey responses. Document behavioral observations in real time. Share interim updates with stakeholders.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I try to capture behavioral signals beyond task performance — hesitation patterns, attention switching, spontaneous verbalization, time distortion indicators. Moments where participant behavior diverges from their self-report are often particularly interesting — these gaps may indicate mechanism-level dynamics that self-report alone can't capture. Environmental and contextual factors that surround the interaction are worth documenting too, not just the interface itself.</p>
+        <h4>Key Deliverables</h4>
+        <p>Session recordings, transcripts, observation notes, behavioral signal logs, survey data, interim findings.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Observed: Participant accepts early suggestions quickly but later expresses uncertainty about argument ownership. Reports feeling faster but less confident in originality.<br/>
+        Behavioral signals: rapid interaction flow, reduced pause duration, increased editing after completion rather than during drafting.</p>
+      </div>
+    </div>
+
+    <!-- Phase 6 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 6 — Synthesis</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Move from raw observations to themes, possible mechanisms, and evidence-backed product implications.</p>
+        <h4>Standard Actions</h4>
+        <p>Affinity mapping, thematic clustering, pattern identification across participants. Identify pain points, opportunities, and severity. Write insight statements.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>For each theme, I find it useful to ask: what behavioral mechanism might explain this pattern? This means going beyond "users struggled with X" to ask what conditions in the interaction environment may have contributed to that struggle. I try to distinguish between usability findings (this doesn't work) and behavioral findings (this may work but produce patterns worth surfacing to the product team). The AI verification protocol — AI generates candidate themes, researcher validates against raw data, counterexamples documented, traceability maintained — is the safeguard that keeps this layer honest.</p>
+        <h4>Key Deliverables</h4>
+        <p>Affinity map, insight statements with mechanism labels, evidence verification table, human outcome domain mapping, behavioral mechanism synthesis.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Pattern: high suggestion acceptance rate early in task.<br/>
+        Possible mechanisms: default bias, automation trust, reduced cognitive effort threshold, anchoring effect.<br/>
+        Traditional UX finding: the feature increases writing speed.<br/>
+        Behavioral layer: the feature may also influence perceived authorship and idea exploration breadth — both worth surfacing for the product team to consider.</p>
+      </div>
+    </div>
+
+    <!-- Phase 7 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 7 — Strategy Impact</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Translate insights into design direction, prioritization, and roadmap decisions.</p>
+        <h4>Standard Actions</h4>
+        <p>Prioritize findings by severity, frequency, and strategic value. Run workshop with PM, design, and engineering. Connect insights to roadmap. Mark hypotheses as validated, partial, or uncertain.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I try to present findings in two layers: (1) traditional usability and satisfaction findings, and (2) behavioral mechanism and human outcome observations. For mechanism findings, I try to be clear about what was observed vs. what is a hypothesis about longer-term trajectory. The distinction between "this requires an immediate design response" and "this is worth tracking over time" is often more useful to product teams than framing everything as urgent. I also try to frame design principles that account for both interaction-level performance and downstream behavioral considerations.</p>
+        <h4>Key Deliverables</h4>
+        <p>Research readout, opportunity areas, design principles, prioritized recommendations, behavioral trajectory considerations.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Design considerations surfaced: show suggestion alternatives rather than a single default; allow delayed suggestion reveal; highlight degree of AI contribution; enable reflection prompts after drafting.<br/>
+        Design principle: support efficiency without reducing perceived agency.</p>
+      </div>
+    </div>
+
+    <!-- Phase 8 -->
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Phase 8 — Knowledge Capture &amp; Portfolio</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <h4>Purpose</h4>
+        <p>Convert project work into reusable organizational knowledge and portfolio-ready evidence.</p>
+        <h4>Standard Actions</h4>
+        <p>Tag insights in the repository. Log open questions for future cycles. Document tradeoffs and pivots. Translate into case study narrative.</p>
+        <h4>Behavioral Science Extension</h4>
+        <p>I try to document which behavioral mechanisms were observed, which were hypothesized but not confirmed, and which were unexpected. A running product behavioral mechanism profile — capturing known mechanism-level dynamics across research cycles — can be a useful institutional resource. The case study narrative benefits from a dual-layer structure: the traditional UX story alongside the behavioral science interpretation, clearly labeled to show what was found vs. what remains a working hypothesis.</p>
+        <h4>Key Deliverables</h4>
+        <p>Repository updates, case study draft, decision audit trail, behavioral mechanism profile, next-cycle research backlog.</p>
+        <h4>Example Application</h4>
+        <p><em>Notion AI Writing Assistant</em></p>
+        <p>Knowledge captured: contexts where AI improved writing flow, contexts where AI may have reduced idea diversity, conditions that preserved sense of authorship.<br/>
+        Open question for future cycle: does long-term AI usage influence writing skill development?</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — METHOD SELECTION
+════════════════════════════════════════════ -->
+<section id="methods">
+  <div class="container">
+    <div class="section-num">03 — Method Selection</div>
+    <h2>Decision Framework</h2>
+
+    <p>Method selection follows a decision logic based on question type, product maturity, uncertainty level, and cost of being wrong. The behavioral science extensions are layered on top of — not substituted for — standard method selection criteria.</p>
+
+    <div class="grid-3 mt3">
+      <div class="method-card">
+        <div class="method-icon">🎙</div>
+        <div class="method-name">Contextual Inquiry</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Understanding real-world behavior in natural context.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Environmental factors, behavioral patterns, workarounds, unspoken friction.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          Observe mechanism activation in situ — how environmental conditions may shape behavior beyond interface interaction.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🧪</div>
+        <div class="method-name">Moderated Usability Testing</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Evaluating interaction design with prototype or product.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Task performance, error patterns, perceived difficulty, satisfaction.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          Capture behavioral signals (hesitation, attention switching, emotional response) that may indicate mechanism-level dynamics.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📋</div>
+        <div class="method-name">Structured Survey</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Measuring attitudes, preferences, or experiences at scale.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Self-reported satisfaction, perceived usability, feature priorities.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          Add validated scales — NASA-TLX (cognitive load), PANAS (affect), perceived agency items, social comparison frequency.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📓</div>
+        <div class="method-name">Diary Study</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Understanding behavior and experience over time.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Longitudinal patterns, habit formation, context effects, emotional trajectories.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          In many cases an ideal method for capturing mechanism effects that may only manifest over time — habit formation, feedback loop development, behavioral trajectory shifts.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📊</div>
+        <div class="method-name">Behavioral Analytics</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Understanding patterns of actual behavior at scale.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Usage patterns, engagement metrics, feature adoption, drop-off points.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          Identify possible behavioral loop signatures — checking frequency patterns, session duration trends, feature return rates — that may indicate specific reinforcement dynamics.
+        </div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🔬</div>
+        <div class="method-name">Experimental Design (A/B)</div>
+        <div class="method-desc">
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">When to use</strong><br/>
+          Testing specific design decisions with controlled variation.<br/><br/>
+          <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">What it captures</strong><br/>
+          Behavioral differences between conditions, statistical significance.<br/><br/>
+          <strong style="color: var(--accent4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;">Behavioral Extension</strong><br/>
+          Design conditions that isolate specific mechanisms — varying feedback timing, default structures, or social cue presence to test mechanism hypotheses.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — AI INTEGRATION PROTOCOL
+════════════════════════════════════════════ -->
+<section id="ai-protocol">
+  <div class="container">
+    <div class="section-num">04 — AI Integration</div>
+    <h2>Responsible AI Usage</h2>
+
+    <p>AI tools are integrated as accelerants, not substitutes. The protocol enforces a clear boundary: AI generates candidates, humans verify findings. I find this distinction important for maintaining research integrity, especially when working with qualitative data where pattern recognition can be shaped by expectation.</p>
+
+    <h3 class="mb2 mt3">AI Verification Protocol</h3>
+
+    <div class="protocol-card">
+      <div class="protocol-num">01</div>
+      <div class="protocol-body">
+        <div class="protocol-title">Force AI to output candidates, not conclusions</div>
+        <div class="protocol-desc">Prompt pattern: "List candidate themes + the evidence you would need to support each." AI is never the source of a finding — it is the source of a hypothesis to be checked.</div>
+      </div>
+    </div>
+
+    <div class="protocol-card">
+      <div class="protocol-num">02</div>
+      <div class="protocol-body">
+        <div class="protocol-title">Verification table required</div>
+        <div class="protocol-desc">Every candidate theme enters a verification table: Candidate finding | Supporting evidence (quote IDs) | Number of participants | Counterexamples | Confidence | Status (Unverified / Verified / Rejected).</div>
+      </div>
+    </div>
+
+    <div class="protocol-card">
+      <div class="protocol-num">03</div>
+      <div class="protocol-body">
+        <div class="protocol-title">2+ evidence rule</div>
+        <div class="protocol-desc">Nothing becomes a finding unless it has at least 2 verbatim quotes or observations AND appears across 2+ participants or sessions. No single-source findings.</div>
+      </div>
+    </div>
+
+    <div class="protocol-card">
+      <div class="protocol-num">04</div>
+      <div class="protocol-body">
+        <div class="protocol-title">Counterevidence mandatory</div>
+        <div class="protocol-desc">For every verified finding, at least one counterexample must be documented — or explicitly marked "none observed." This helps prevent confirmation bias in AI-assisted synthesis.</div>
+      </div>
+    </div>
+
+    <div class="protocol-card">
+      <div class="protocol-num">05</div>
+      <div class="protocol-body">
+        <div class="protocol-title">Traceability requirement</div>
+        <div class="protocol-desc">Every verified finding must link to raw data location — transcript timestamp, note ID, video clip. If you can't trace it back, it's not a finding.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">AI Tool Stack</h3>
+
+    <div class="grid-3">
+      <div class="tool-card">
+        <h4>ChatGPT</h4>
+        <p>Draft discussion guides, brainstorm hypotheses, generate candidate themes, structured outlines</p>
+      </div>
+      <div class="tool-card">
+        <h4>NotebookLM</h4>
+        <p>Source-grounded synthesis across uploaded documents, cross-document summaries, study-relevant questions</p>
+      </div>
+      <div class="tool-card">
+        <h4>Perplexity</h4>
+        <p>Web-backed scans for definitions, market context, prior art — rapid orientation with citations</p>
+      </div>
+      <div class="tool-card">
+        <h4>Claude</h4>
+        <p>Bias critique, logic stress-testing, long-form synthesis drafts, careful editing and rewriting</p>
+      </div>
+      <div class="tool-card">
+        <h4>Gemini</h4>
+        <p>Alternative framings, second-opinion drafts, risk and edge-case identification, missing-question suggestions</p>
+      </div>
+      <div class="tool-card">
+        <h4>Whisper + Dovetail</h4>
+        <p>Transcription → highlight → code → cluster → insight pipeline with traceability from raw data to finding</p>
+      </div>
+    </div>
+
+    <div class="ai-highlight">
+      <h4>AI Prompt Log</h4>
+      <p>Every AI interaction is documented: tool used, prompt given, input type, output summary, what was accepted/rejected. This creates an audit trail for research integrity and enables methodological improvement over time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — HUMAN OUTCOMES LAYER
+════════════════════════════════════════════ -->
+<section id="human-outcomes">
+  <div class="container">
+    <div class="section-num">05 — The Behavioral Science Extension</div>
+    <h2>Human Outcomes Integration</h2>
+
+    <p>This is the distinctive layer of my approach. Alongside traditional UX evaluation, I try to surface how products may influence human functioning across identifiable domains through identifiable mechanisms. How relevant this layer is varies considerably by project and product type.</p>
+
+    <h3 class="mb2 mt3">Domains I Often Consider</h3>
+
+    <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+      <div class="domain-card">
+        <div class="domain-num">Domain 01</div>
+        <div class="domain-title">Attention</div>
+        <div class="domain-desc">Is the product potentially fragmenting sustained attention? What notification, interruption, or content structures might be shaping attentional allocation?</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-num">Domain 02</div>
+        <div class="domain-title">Behavioral Patterns</div>
+        <div class="domain-desc">What habits might the product be forming? What reinforcement structures could be producing those patterns? Are they aligned with user goals?</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-num">Domain 03</div>
+        <div class="domain-title">Cognitive Load</div>
+        <div class="domain-desc">Is the interaction environment imposing excessive cognitive demands? Where might switching costs, decision friction, and information overload be occurring?</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-num">Domain 04</div>
+        <div class="domain-title">Emotional Experience</div>
+        <div class="domain-desc">How might the product influence affective states? Could social comparison, feedback tone, or content exposure produce emotional effects beyond the immediate interaction?</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-num">Domain 05</div>
+        <div class="domain-title">Social Dynamics</div>
+        <div class="domain-desc">Is the product potentially shaping social comparison, perceived norms, relational quality, or conditions for felt connection?</div>
+      </div>
+      <div class="domain-card">
+        <div class="domain-num">Domain 06</div>
+        <div class="domain-title">Perceived Agency</div>
+        <div class="domain-desc">Does the user feel in autonomous control of their experience? Might opacity, personalization, or default structures be constraining perceived choice?</div>
+      </div>
+    </div>
+
+    <h3 class="mb2 mt4">Mechanism Questions I Try to Carry Through Each Phase</h3>
+
+    <div class="mechanism-card">
+      <div class="mechanism-row">
+        <div class="mechanism-label">Framing</div>
+        <div class="mechanism-question">What behavioral mechanisms might this product activate?</div>
+      </div>
+      <div class="mechanism-row">
+        <div class="mechanism-label">Background</div>
+        <div class="mechanism-question">What does the literature say about these mechanisms?</div>
+      </div>
+      <div class="mechanism-row">
+        <div class="mechanism-label">Design</div>
+        <div class="mechanism-question">How do we capture mechanism-level signals in the study?</div>
+      </div>
+      <div class="mechanism-row">
+        <div class="mechanism-label">Fieldwork</div>
+        <div class="mechanism-question">What behavioral signals are we observing beyond task performance?</div>
+      </div>
+      <div class="mechanism-row">
+        <div class="mechanism-label">Synthesis</div>
+        <div class="mechanism-question">What mechanism might explain each behavioral pattern?</div>
+      </div>
+      <div class="mechanism-row">
+        <div class="mechanism-label">Strategy</div>
+        <div class="mechanism-question">What are the downstream considerations — not just for the next sprint, but for long-term user experience?</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">06 — Deliverable System</div>
+    <h2>Research Artifacts</h2>
+
+    <div class="grid-2 mt3">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📋</div>
+        <div class="artifact-name">Research Brief</div>
+        <div class="artifact-note">Problem statement, research questions, success metrics, behavioral mechanism hypotheses</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🗺</div>
+        <div class="artifact-name">Research Plan</div>
+        <div class="artifact-note">Methods, sample, timeline, feasibility, behavioral signal protocol</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🎙</div>
+        <div class="artifact-name">Discussion Guide</div>
+        <div class="artifact-note">Interview structure with mechanism-probing questions and behavioral debrief</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📊</div>
+        <div class="artifact-name">Evidence Verification Table</div>
+        <div class="artifact-note">Candidate findings with supporting evidence, counterexamples, confidence levels, and traceability</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🧩</div>
+        <div class="artifact-name">Affinity Map + Mechanism Labels</div>
+        <div class="artifact-note">Thematic clusters with possible behavioral mechanism identification for each cluster</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">💡</div>
+        <div class="artifact-name">Insight Statements</div>
+        <div class="artifact-note">Dual-layer insights: usability finding + behavioral mechanism interpretation, clearly labeled by confidence</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📐</div>
+        <div class="artifact-name">Human Outcome Domain Map</div>
+        <div class="artifact-note">Product-specific mapping of which human outcome domains may be influenced and through what mechanisms</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📈</div>
+        <div class="artifact-name">Research Readout</div>
+        <div class="artifact-note">Two-layer presentation: traditional UX findings + behavioral science observations and hypotheses</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — REPOSITORY STRUCTURE
+════════════════════════════════════════════ -->
+<section id="repository">
+  <div class="container">
+    <div class="section-num">07 — Research Ops</div>
+    <h2>Repository Architecture</h2>
+
+    <div class="code-block mt3">
+      <span class="path-dir">PROJECT_NAME/</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">00_ops/</span>           <span class="path-comment">— Repository setup, tagging, AI protocol, consent</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">01_framing/</span>       <span class="path-comment">— Research brief, assumptions, stakeholder alignment</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">02_background/</span>    <span class="path-comment">— Literature, prior research, mechanism landscape</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">03_design/</span>        <span class="path-comment">— Research plan, sample plan, method justification</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">04_instruments/</span>   <span class="path-comment">— Guides, protocols, surveys, observation sheets</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">05_fieldwork/</span>     <span class="path-comment">— Recordings, transcripts, behavioral signal logs</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">06_synthesis/</span>     <span class="path-comment">— Affinity maps, evidence tables, mechanism analysis</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">07_strategy/</span>      <span class="path-comment">— Readout, recommendations, design principles</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">08_outputs/</span>       <span class="path-comment">— Case study, portfolio materials, knowledge capture</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">decision_log/</span>     <span class="path-comment">— All research decisions with reasoning and evidence</span><br/>
+      &nbsp;&nbsp;<span class="path-dir">ai_prompt_log/</span>    <span class="path-comment">— All AI interactions with audit trail</span>
+    </div>
+
+    <h3 class="mb2 mt4">Tagging Taxonomy</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Standard UX Tags</h4>
+        <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.5rem; font-family: var(--font-mono); line-height: 1.9;">
+          #usability &nbsp; #satisfaction &nbsp; #taskperformance<br/>
+          #painpoint &nbsp; #opportunity &nbsp; #featurerequest
+        </p>
+      </div>
+      <div class="card">
+        <h4 style="color: var(--accent4);">Behavioral Science Tags</h4>
+        <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.5rem; font-family: var(--font-mono); line-height: 1.9;">
+          #cognitiveload &nbsp; #attention &nbsp; #habitformation<br/>
+          #feedbackloop &nbsp; #socialcomparison &nbsp; #reinforcement<br/>
+          #perceivedagency &nbsp; #behavioralmechanism
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — EXAMPLE TIMELINE
+════════════════════════════════════════════ -->
+<section id="timeline">
+  <div class="container">
+    <div class="section-num">08 — Project Cadence</div>
+    <h2>8-Week Example Cycle</h2>
+
+    <div class="week-grid mt3">
+      <div class="week-card">
+        <div class="week-label">Week 1</div>
+        <div class="week-title">Framing &amp; Alignment</div>
+        <div class="week-desc">Stakeholder workshop, assumption surfacing, research brief, mechanism hypotheses</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 2</div>
+        <div class="week-title">Study Design</div>
+        <div class="week-desc">Method selection, sample plan, behavioral signal protocol, recruitment</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 3</div>
+        <div class="week-title">Instruments</div>
+        <div class="week-desc">Guide drafting, task scenarios, pilot testing, mechanism-probing questions</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 4</div>
+        <div class="week-title">Fieldwork (Sessions 1–6)</div>
+        <div class="week-desc">Moderated sessions, behavioral observation, real-time signal capture</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 5</div>
+        <div class="week-title">Fieldwork (Sessions 7–12)</div>
+        <div class="week-desc">Remaining sessions, interim findings, stakeholder pulse check</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 6</div>
+        <div class="week-title">Synthesis</div>
+        <div class="week-desc">Affinity mapping, mechanism analysis, evidence verification, dual-layer insights</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 7</div>
+        <div class="week-title">Strategy Impact</div>
+        <div class="week-desc">Research readout, design workshop, roadmap integration, design principles</div>
+      </div>
+      <div class="week-card">
+        <div class="week-label">Week 8</div>
+        <div class="week-title">Knowledge Capture</div>
+        <div class="week-desc">Repository update, case study draft, mechanism profile, next-cycle backlog</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">09 — Operating Principles</div>
+    <h2>Things I've Found Useful to Keep in Mind</h2>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">Behavioral signals are often observable — you just have to design for them</div>
+          <div class="insight-desc">Hesitation patterns, attention switching, time distortion, and emotional micro-responses can often be observed in standard research sessions. The difference is usually whether the protocol was designed to capture them. In many cases this requires only modest additions to a standard discussion guide.</div>
+          <span class="insight-tag">Observation Design</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Some UX methods may not always focus on longer-term behavioral effects</div>
+          <div class="insight-desc">Usability testing is well-suited to capturing whether a product works. It may not always surface whether the product is forming habits, fragmenting attention, or producing social comparison over time. These dimensions often require a different lens — and a deliberate choice to look for them.</div>
+          <span class="insight-tag">Evaluation Scope</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">AI is powerful for generation, requires care for conclusion</div>
+          <div class="insight-desc">AI tools can accelerate hypothesis generation, theme clustering, and draft production. They also produce confident-sounding outputs that may not be grounded in evidence. The verification protocol — candidates not conclusions, 2+ evidence rule, counterexample requirement, traceability — is the safeguard I try to apply consistently.</div>
+          <span class="insight-tag">AI Integration</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Two layers of insight can give stakeholders richer decision material</div>
+          <div class="insight-desc">Presenting both traditional UX findings and behavioral mechanism observations gives product teams more to work with. "Users struggled with navigation" is useful. "Users struggled in a way that may be related to attentional switching costs during multi-step tasks" opens a different kind of design conversation — not always necessary, but sometimes exactly what's needed.</div>
+          <span class="insight-tag">Dual-Layer Analysis</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">Research infrastructure compounds — individual studies often don't</div>
+          <div class="insight-desc">The repository structure, tagging taxonomy, mechanism profiles, and decision logs create institutional memory that makes each subsequent study more efficient and more grounded. Research operations are, in many cases, the difference between doing studies and building knowledge.</div>
+          <span class="insight-tag">Research Operations</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — WHAT THIS SIGNALS
+════════════════════════════════════════════ -->
+<section id="portfolio-signal">
+  <div class="container">
+    <div class="section-num">10 — Portfolio Signal</div>
+    <h2>What I Hope This Communicates</h2>
+
+    <div class="grid-2 mt3">
+      <div class="signal-card">
+        <h4>Research Thinking</h4>
+        <ul class="signal-list">
+          <li><span class="signal-dot">·</span>Structured approach to framing research questions</li>
+          <li><span class="signal-dot">·</span>Mixed methods fluency across qualitative, quantitative, and behavioral observation</li>
+          <li><span class="signal-dot">·</span>Evidence verification practices that I try to apply consistently</li>
+          <li><span class="signal-dot">·</span>Awareness of research operations as institutional infrastructure</li>
+          <li><span class="signal-dot">·</span>Stakeholder alignment as a research skill, not an afterthought</li>
+        </ul>
+      </div>
+      <div class="signal-card">
+        <h4>Distinctive Orientation</h4>
+        <ul class="signal-list">
+          <li><span class="signal-dot">·</span>Curiosity about behavioral mechanisms alongside usability</li>
+          <li><span class="signal-dot">·</span>Interest in what products do to people over time, not just in the moment</li>
+          <li><span class="signal-dot">·</span>Grounding in behavioral science, systems thinking, and environmental psychology</li>
+          <li><span class="signal-dot">·</span>Commitment to honest synthesis — distinguishing what I found from what I think</li>
+          <li><span class="signal-dot">·</span>Openness to learning and refining through practice and collaboration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">11 — Reflection</div>
+    <h2>Scope &amp; Honest Limitations</h2>
+
+    <div class="limitation-grid">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">This operating system represents how I currently think about research. It continues to evolve as I gain more experience conducting research in product environments. I expect many elements to be refined through collaboration with designers, researchers, and product teams.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">Not every project needs every phase or every extension. The behavioral science lens is most useful for products that influence habits, shape attention, affect emotional experience, or mediate social interaction. For many evaluative research questions, standard UX methods are exactly what's needed.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The AI verification protocol adds overhead that is justified for high-stakes research but may be unnecessarily rigorous for rapid-cycle evaluative studies. Practical judgment about when to apply it fully is part of the process.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The human outcomes layer is often conceptual — not all products have validated measurement instruments for every outcome domain. This framework attempts to identify what to consider; measurement development is an ongoing area of growth.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">I'm early in my UX research career and continue refining this approach through coursework, projects, and collaboration with others in the field. I share this artifact to make my thinking transparent and invite dialogue.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">12 — Future Development</div>
+    <h2>Next Steps</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Measurement Development</h4>
+        <p>Developing lightweight, validated instruments for assessing human outcome domains (attention quality, perceived agency, cognitive load) that can be embedded in standard UX research protocols.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Mechanism Library</h4>
+        <p>Building a reusable library of behavioral mechanisms commonly observed across product categories — supporting faster mechanism identification in future studies.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Longitudinal Integration</h4>
+        <p>Developing protocols for tracking behavioral trajectory indicators across research cycles — moving beyond single-study snapshots toward cumulative understanding.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Practitioner Dialogue</h4>
+        <p>Learning from UX researchers, designers, and behavioral scientists whose work intersects with these questions — refining the approach through practice and collaboration rather than in isolation.</p>
+      </div>
+    </div>
+
+    <div class="personal-note mt4">
+      I'm early in my UX research journey and continue refining this approach through coursework, projects, and collaboration with others in the field. I share this artifact not as a finished framework, but as a transparent representation of how I think about research — and an invitation to dialogue with other researchers and designers who care about these questions.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top: 0.4rem; font-size: 0.72rem;">Research Operating System — Process Framework Artifact</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
