@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wellness Verified — Strengths-Based Systems Intervention</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0e0e0f;
+      --surface:   #161618;
+      --surface2:  #1e1e22;
+      --surface3:  #26262c;
+      --border:    #2e2e36;
+      --accent:    #c8a96e;
+      --accent2:   #7b9ea8;
+      --accent3:   #a07bc8;
+      --accent4:   #5bb8a9;
+      --text:      #e8e6e0;
+      --text-muted:#8a8880;
+      --text-dim:  #5a5855;
+      --tag-bg:    #1e1e22;
+      --radius:    8px;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Typography ── */
+    h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 300; letter-spacing: -0.02em; line-height: 1.1; }
+    h2 { font-size: 1.05rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 1.6rem; }
+    h3 { font-size: 1.1rem; font-weight: 500; color: var(--text); margin-bottom: 0.6rem; }
+    h4 { font-size: 0.85rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+    p  { color: #ccc8c0; margin-bottom: 0.9rem; }
+    p:last-child { margin-bottom: 0; }
+
+    a { color: var(--accent4); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+    .wide      { max-width: 1080px; margin: 0 auto; padding: 0 2rem; }
+
+    section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+    section:last-of-type { border-bottom: none; }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(14,14,15,0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.06em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 9rem 0 6rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 60% 40%, rgba(91,184,169,0.06) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 20% 80%, rgba(123,158,168,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent4); margin-bottom: 1.6rem;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .hero-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent4); }
+    .hero-title { margin-bottom: 1.2rem; }
+    .hero-title em { font-style: italic; color: var(--accent4); }
+    .hero-subtitle { font-size: 1.15rem; color: var(--text-muted); font-weight: 300; max-width: 600px; margin-bottom: 2.5rem; line-height: 1.6; }
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 3rem; }
+    .tag {
+      font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      padding: 0.3rem 0.75rem; border-radius: 99px;
+      border: 1px solid var(--border); color: var(--text-muted); background: var(--tag-bg);
+    }
+    .tag.accent4 { border-color: rgba(91,184,169,0.4); color: var(--accent4); }
+    .tag.accent2 { border-color: rgba(123,158,168,0.4); color: var(--accent2); }
+    .tag.accent3 { border-color: rgba(160,123,200,0.4); color: var(--accent3); }
+    .hero-statement {
+      max-width: 560px; padding: 1.2rem 1.5rem;
+      border-left: 2px solid var(--accent4);
+      background: rgba(91,184,169,0.04);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 0.95rem; color: var(--text-muted); line-height: 1.65;
+    }
+
+    /* ── Section labels ── */
+    .section-num {
+      font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--text-dim); font-weight: 600; margin-bottom: 0.5rem;
+    }
+
+    /* ── Cards & Grids ── */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem;
+    }
+    .card + .card { margin-top: 1rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+    }
+
+    /* ── Model Flow ── */
+    .model-flow {
+      display: flex; flex-direction: column; align-items: center; gap: 0;
+      padding: 2rem 1rem;
+    }
+    .model-node {
+      width: 100%; max-width: 460px;
+      text-align: center; padding: 0.9rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); font-size: 0.9rem; color: var(--text);
+      position: relative; z-index: 1;
+    }
+    .model-node.accent4-border {
+      border-color: rgba(91,184,169,0.5);
+      background: rgba(91,184,169,0.05);
+    }
+    .model-node.highlight {
+      border-color: rgba(91,184,169,0.5);
+      background: rgba(91,184,169,0.06);
+      color: var(--accent4);
+    }
+    .model-node-title { font-weight: 600; color: var(--text); }
+    .model-node-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.25rem; }
+    .model-arrow {
+      width: 1px; height: 28px; background: var(--border);
+      position: relative;
+    }
+    .model-arrow::after {
+      content: '↓'; position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.85rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Research Questions ── */
+    .rq-primary {
+      padding: 1.8rem; background: var(--surface2); border-radius: var(--radius);
+      border: 1px solid rgba(91,184,169,0.25); margin-bottom: 1.5rem;
+    }
+    .rq-primary .label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); font-weight: 600; margin-bottom: 0.5rem; }
+    .rq-primary .question { font-size: 1.15rem; color: var(--text); line-height: 1.5; }
+
+    .rq-secondary { display: flex; flex-direction: column; gap: 0.6rem; }
+    .rq-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.9rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .rq-num { font-size: 0.72rem; font-weight: 700; color: var(--accent2); min-width: 22px; margin-top: 2px; }
+    .rq-text { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* ── Method Cards ── */
+    .method-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem; display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .method-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .method-name { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .method-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ── Artifact Placeholders ── */
+    .artifact-placeholder {
+      background: var(--surface2); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 2.5rem 1.5rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; text-align: center; min-height: 160px;
+    }
+    .artifact-icon { font-size: 2rem; opacity: 0.35; }
+    .artifact-name { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+    .artifact-note { font-size: 0.72rem; color: var(--text-dim); }
+
+    /* ── Insights ── */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.2rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      transition: border-color 0.2s;
+    }
+    .insight-item:hover { border-color: rgba(91,184,169,0.3); }
+    .insight-num { font-size: 0.72rem; font-weight: 700; color: var(--accent4); padding-top: 2px; min-width: 22px; }
+    .insight-body {}
+    .insight-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+    .insight-desc { font-size: 0.82rem; color: var(--text-muted); }
+    .insight-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 99px; border: 1px solid var(--border); color: var(--text-dim); margin-top: 0.4rem; }
+
+    /* ── Expandable ── */
+    .expandable { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 0.6rem; }
+    .expandable-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 1.2rem; background: var(--surface); cursor: pointer;
+      transition: background 0.2s;
+    }
+    .expandable-header:hover { background: var(--surface2); }
+    .expandable-title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+    .expandable-icon { font-size: 0.8rem; color: var(--text-muted); transition: transform 0.25s; }
+    .expandable.open .expandable-icon { transform: rotate(45deg); }
+    .expandable-body { display: none; padding: 1rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .expandable.open .expandable-body { display: block; }
+    .expandable-body h4 { margin-top: 0.8rem; margin-bottom: 0.3rem; }
+    .expandable-body h4:first-child { margin-top: 0; }
+    .expandable-body p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .expandable-body p:last-child { margin-bottom: 0; }
+
+    /* ── Friction Map ── */
+    .friction-row {
+      display: flex; gap: 1.2rem; align-items: stretch;
+      padding: 0.85rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+    .friction-icon { font-size: 1rem; min-width: 22px; display: flex; align-items: center; justify-content: center; }
+    .friction-factor { font-size: 0.85rem; color: var(--text); flex: 1; }
+    .friction-level { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; padding: 0.2rem 0.6rem; border-radius: 99px; align-self: center; }
+    .friction-high { background: rgba(200,80,80,0.12); color: #e07878; border: 1px solid rgba(200,80,80,0.2); }
+    .friction-med  { background: rgba(91,184,169,0.1); color: var(--accent4); border: 1px solid rgba(91,184,169,0.2); }
+    .friction-low  { background: rgba(80,160,120,0.1); color: #72c4a0; border: 1px solid rgba(80,160,120,0.2); }
+
+    /* ── Limitation Grid ── */
+    .limitation-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+    .limitation-item {
+      display: flex; gap: 1rem; align-items: flex-start;
+      padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .limitation-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); margin-top: 6px; flex-shrink: 0; }
+    .limitation-text { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* ── Next Steps ── */
+    .next-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    @media (max-width: 640px) { .next-step-grid { grid-template-columns: 1fr; } }
+    .next-step-card {
+      padding: 1.1rem 1.2rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .next-step-card h4 { color: var(--accent2); margin-bottom: 0.4rem; }
+    .next-step-card h4.accent4 { color: var(--accent4); }
+    .next-step-card p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 3rem 0; text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+
+    /* ── Scroll Progress ── */
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+      background: var(--accent4); z-index: 200; transition: width 0.1s linear;
+    }
+
+    /* ── Utilities ── */
+    .mt1 { margin-top: 0.5rem; }
+    .mt2 { margin-top: 1rem; }
+    .mt3 { margin-top: 1.5rem; }
+    .mt4 { margin-top: 2rem; }
+    .mb2 { margin-bottom: 1rem; }
+    .flex-center { display: flex; align-items: center; gap: 0.8rem; }
+    .divider { height: 1px; background: var(--border); margin: 2rem 0; }
+    .note {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.7rem 1rem;
+      border-left: 2px solid var(--border);
+      background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0;
+      font-style: italic;
+    }
+
+    /* ── Construct Map ── */
+    .construct-map {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem;
+      padding: 1.5rem; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    @media (max-width: 640px) { .construct-map { grid-template-columns: 1fr 1fr; } }
+    .construct-node {
+      padding: 0.6rem 0.8rem; text-align: center;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+    }
+    .construct-node.primary { border-color: rgba(91,184,169,0.4); color: var(--accent4); background: rgba(91,184,169,0.04); }
+    .construct-node.secondary { border-color: rgba(123,158,168,0.3); color: var(--accent2); }
+    .construct-node.tertiary { border-color: rgba(160,123,200,0.3); color: var(--accent3); }
+
+    /* ── Synthesis Theme ── */
+    .synthesis-theme {
+      padding: 1rem 1.2rem; border-left: 3px solid var(--accent4);
+      background: rgba(91,184,169,0.03); margin-bottom: 0.6rem; border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .synthesis-theme p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Domain Cards (Framework) ── */
+    .domain-framework { display: flex; flex-direction: column; gap: 0.8rem; }
+    .domain-framework-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem; border-left: 3px solid var(--accent4);
+    }
+    .domain-framework-card:hover { background: var(--surface2); }
+    .domain-fw-num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.3rem; }
+    .domain-fw-title { font-size: 0.92rem; font-weight: 600; color: var(--text); margin-bottom: 0.4rem; }
+    .domain-fw-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .domain-fw-mechs { font-size: 0.72rem; color: var(--text-dim); font-style: italic; }
+
+    /* ── Principle Pills ── */
+    .principle-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .principle-pill {
+      font-size: 0.8rem; padding: 0.45rem 1rem; border-radius: 99px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .principle-pill:hover { border-color: rgba(91,184,169,0.4); color: var(--accent4); background: rgba(91,184,169,0.04); }
+
+    /* ── Fragmentation Visual ── */
+    .fragmentation-card {
+      background: var(--surface2); border: 1px solid rgba(91,184,169,0.3);
+      border-radius: var(--radius); padding: 1.5rem; margin-top: 1.5rem;
+    }
+    .frag-row {
+      display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+      padding: 0.6rem 0;
+    }
+    .frag-block {
+      flex: 1; text-align: center; padding: 0.8rem 1rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    }
+    .frag-block-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .frag-block-items { font-size: 0.78rem; color: var(--text-dim); }
+    .frag-sep { font-size: 1.3rem; color: var(--text-dim); flex-shrink: 0; }
+    .frag-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+
+    /* ── Pathway ── */
+    .pathway { display: flex; flex-direction: column; gap: 0; }
+    .pathway-step {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      padding: 1.1rem 1.4rem;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      position: relative;
+    }
+    .pathway-step-num {
+      font-size: 1.4rem; font-weight: 700; color: var(--accent4); min-width: 40px;
+      line-height: 1; padding-top: 0.1rem; flex-shrink: 0;
+    }
+    .pathway-step-body {}
+    .pathway-step-body h4 { color: var(--text); margin-bottom: 0.3rem; }
+    .pathway-step-body p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+    .pathway-connector {
+      width: 1px; height: 20px; background: var(--border); margin: 0 0 0 calc(1.4rem + 20px);
+      position: relative;
+    }
+    .pathway-connector::after {
+      content: '↓'; position: absolute; bottom: -8px; left: 50%;
+      transform: translateX(-50%);
+      color: var(--text-dim); font-size: 0.8rem; background: var(--bg); padding: 0 2px;
+    }
+
+    /* ── Gap Card (Two-Part) ── */
+    .gap-card {
+      background: var(--surface); border: 1px solid rgba(91,184,169,0.3);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .gap-card-row { padding: 1.2rem 1.5rem; }
+    .gap-card-row:first-child { border-bottom: 1px solid var(--border); }
+    .gap-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent4); margin-bottom: 0.4rem; }
+    .gap-text { font-size: 0.87rem; color: var(--text-muted); }
+
+    /* ── Feedback Card ── */
+    .feedback-card {
+      background: rgba(91,184,169,0.04); border: 1px solid rgba(91,184,169,0.2);
+      border-radius: var(--radius); padding: 1.2rem 1.5rem; margin-top: 1.5rem;
+    }
+    .feedback-card p { font-size: 0.87rem; color: var(--text-muted); margin: 0; }
+
+    /* ── Comparison Model ── */
+    .comparison-model { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+    @media (max-width: 640px) { .comparison-model { grid-template-columns: 1fr; } }
+    .comparison-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 1.2rem 1.4rem;
+    }
+    .comparison-card.traditional h4 { color: var(--text-muted); }
+    .comparison-card.wv-model h4 { color: var(--accent4); }
+    .comparison-steps { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.6rem; }
+    .comparison-step {
+      font-size: 0.8rem; color: var(--text-dim); padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-step:last-child { border-bottom: none; }
+    .comparison-step.active { color: var(--accent4); }
+
+    /* ── Capability Lists ── */
+    .cap-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; padding: 0; margin-top: 0.5rem; }
+    .cap-list li { font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 0.6rem; align-items: flex-start; }
+    .cap-list li::before { content: '·'; color: var(--text-dim); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- ── Navigation ── -->
+<nav>
+  <span class="nav-brand">WV</span>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#systems-model">Systems Model</a></li>
+    <li><a href="#toolkit">Toolkit</a></li>
+    <li><a href="#insights">Insights</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     HERO
+════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-label">Behavioral Science · Systems Thinking · Responsible Innovation</div>
+    <h1 class="hero-title">Wellness<br/><em>Verified</em></h1>
+    <p class="hero-subtitle">A strengths-based systems intervention that shifts innovation incentives toward environments that measurably support human functioning.</p>
+    <div class="hero-tags">
+      <span class="tag accent4">Behavioral Science</span>
+      <span class="tag accent2">Systems Thinking</span>
+      <span class="tag accent3">Responsible Innovation</span>
+      <span class="tag">UX Research</span>
+      <span class="tag">Human-Computer Interaction</span>
+      <span class="tag">Conceptual Research</span>
+    </div>
+    <div class="hero-statement">
+      Products function as behavioral environments that shape attention, behavior, emotional experience, social interaction, and knowledge exposure through identifiable mechanisms. Yet the innovation ecosystems that produce these environments are rarely organized around human functioning outcomes. Wellness Verified applies strengths-based behavioral change principles at the systems level — using recognition, incentive alignment, and collaborative development to increase the prevalence of designed environments that support human flourishing. The intervention target is not the individual user, but the conditions shaping the conditions that shape user behavior.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     01 — PROJECT OVERVIEW
+════════════════════════════════════════════ -->
+<section id="overview">
+  <div class="container">
+    <div class="section-num">01 — Project Overview</div>
+    <h2>What This Explores</h2>
+
+    <p>Every designed environment shapes human functioning. A social media platform structures attention and curates social comparison. A productivity tool shapes cognitive load and perceived agency. A learning platform influences motivation and self-efficacy. These effects are structural consequences of design decisions — predictable from existing behavioral science, yet rarely evaluated with the same rigor applied to usability, engagement, or commercial performance.</p>
+
+    <p>Wellness Verified begins from this observation but asks a different question than most responsible innovation frameworks. Rather than asking how products can be restricted from producing negative effects, it asks: how can innovation ecosystems be restructured so that environments supporting human functioning are more likely to be built, recognized, valued, and adopted?</p>
+
+    <p>This reframes the problem as a systems-level behavioral change challenge. The intervention target is not the individual user's behavior, nor even the individual product's design — it is the incentive structures, market signals, professional norms, and feedback loops that shape how innovation ecosystems operate. Wellness Verified applies the same behavioral science principles it studies — reinforcement, feedback loops, identity signaling, choice architecture, norm formation — to change the behavior of the systems that produce behavioral environments.</p>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">The Recursive Insight</h3>
+    <div class="card" style="border-color: rgba(91,184,169,0.35); background: rgba(91,184,169,0.03);">
+      <p style="font-size:0.92rem; color:var(--text-muted); margin:0;">Wellness Verified uses behavioral science to change the behavior of the systems that produce behavioral environments. The same mechanisms that shape individual behavior — reinforcement structures, feedback loops, identity signaling, social norms, choice architecture — operate at the systems level, shaping how organizations design, evaluate, and govern the products that millions of people interact with daily. By intervening at the incentive and norm-formation layer, WV creates conditions in which human-supportive design becomes the path of least resistance — not through restriction, but through recognition.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Areas of Inquiry</h3>
+    <div class="grid-3">
+      <div class="card">
+        <h4>Systems-Level Behavioral Change</h4>
+        <p style="font-size:0.82rem; margin:0;">How can strengths-based behavioral change principles be applied to innovation ecosystems rather than to individual users?</p>
+      </div>
+      <div class="card">
+        <h4>Incentive Alignment</h4>
+        <p style="font-size:0.82rem; margin:0;">How can recognition, signaling, and market advantage create feedback loops that reinforce human-supportive design practices?</p>
+      </div>
+      <div class="card">
+        <h4>Human Outcome Evaluation</h4>
+        <p style="font-size:0.82rem; margin:0;">How can interdisciplinary research inform structured approaches for identifying products' effects on human functioning across behavioral, cognitive, emotional, social, and epistemic domains?</p>
+      </div>
+      <div class="card">
+        <h4>Developmental Standards</h4>
+        <p style="font-size:0.82rem; margin:0;">How can evaluation function as a collaborative development pathway — helping builders improve — rather than as an adversarial compliance mechanism?</p>
+      </div>
+      <div class="card">
+        <h4>Norm Formation</h4>
+        <p style="font-size:0.82rem; margin:0;">How can recognition of beneficial design shift baseline expectations for how products should influence the people who use them?</p>
+      </div>
+      <div class="card">
+        <h4>Innovation Ecosystem Dynamics</h4>
+        <p style="font-size:0.82rem; margin:0;">How do incentive structures, professional norms, and market signals interact to shape what kinds of products get built?</p>
+      </div>
+    </div>
+
+    <div class="note mt3">This project is a conceptual research and applied framework development effort. It does not assume digital technologies are inherently harmful. It assumes innovation is powerful — and that power can be directed toward beneficial outcomes through well-designed incentive structures.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — PROBLEM SPACE
+════════════════════════════════════════════ -->
+<section id="problem">
+  <div class="container">
+    <div class="section-num">02 — Problem Space</div>
+    <h2>Two Gaps, Not One</h2>
+
+    <p>The conventional framing identifies a single gap: products influence human functioning, but evaluation frameworks don't capture these effects. Wellness Verified identifies a second, deeper gap: even where evaluation frameworks exist, the innovation ecosystems that produce products are not organized around human functioning outcomes. The problem is not only that products aren't evaluated for their human effects — it's that the incentive structures governing innovation don't reward human-supportive design.</p>
+
+    <div class="gap-card mt3">
+      <div class="gap-card-row">
+        <div class="gap-label">Gap 1 — Evaluation</div>
+        <div class="gap-text">Products influence attention, behavior, emotional experience, social interaction, and knowledge exposure through identifiable mechanisms. Dominant evaluation frameworks (usability, engagement, retention) do not capture these effects.</div>
+      </div>
+      <div class="gap-card-row">
+        <div class="gap-label">Gap 2 — Incentives</div>
+        <div class="gap-text">Even where the knowledge exists, the innovation ecosystem's incentive structures — market signals, professional norms, organizational metrics, funding criteria — do not systematically reward design that supports human functioning.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Why Risk-Only Frameworks Are Insufficient</h3>
+
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Risk-focused approaches produce minimum compliance — organizations do the minimum required to avoid penalty rather than proactively innovating toward positive human outcomes</div>
+      <div class="friction-level friction-high">Structural limit</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">⚠</div>
+      <div class="friction-factor">Enforcement-oriented models create adversarial dynamics between regulators and builders, reducing trust and creative engagement</div>
+      <div class="friction-level friction-high">Structural limit</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Punitive frameworks incentivize defensive design and performative ethics rather than genuine improvement in human outcomes</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Risk framing positions human outcomes as constraints on innovation rather than opportunities for differentiation and value creation</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+    <div class="friction-row">
+      <div class="friction-icon">◆</div>
+      <div class="friction-factor">Absence of positive recognition structures means beneficial design receives no market signal advantage — good design is invisible to markets</div>
+      <div class="friction-level friction-med">Moderate</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — CONCEPTUAL FRAMING
+════════════════════════════════════════════ -->
+<section id="framework">
+  <div class="container">
+    <div class="section-num">03 — Conceptual Framing</div>
+    <h2>Theoretical Grounding</h2>
+
+    <p>Wellness Verified draws on eight intersecting theoretical traditions — spanning behavioral science, social work, economics, and innovation research — to ground its systems-level intervention model.</p>
+
+    <div class="expandable open">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Strengths-Based Practice Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Originating in social work (Saleebey, 2006), strengths-based approaches focus on identifying and amplifying existing capacities rather than diagnosing and remediating deficits. Applied to innovation systems, this means WV does not ask "what is this product doing wrong?" but "where is this product already supporting human functioning, and how can that be recognized, strengthened, and expanded?" Strengths-based approaches are associated with greater engagement, less defensiveness, more creativity, more voluntary adoption, and greater diffusion through peer influence — precisely the dynamics needed to shift innovation ecosystems.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Behavioral Economics &amp; Incentive Design</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Thaler and Sunstein (2008) established that behavior is shaped by the structure of choice environments. Applied at the systems level, WV treats the innovation ecosystem itself as a choice environment — where the defaults, incentives, and feedback structures available to builders shape what kinds of products get designed. By introducing recognition, market signaling value, and reputational incentives for human-supportive design, WV modifies the choice architecture facing innovation teams.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Innovation Diffusion Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Rogers (2003) documented that innovations spread through social systems via observable advantage, compatibility with existing values, trialability, and social influence. WV is designed to activate these diffusion mechanisms for human-supportive design: certification creates observable advantage (market differentiation), the framework is compatible with existing design workflows, the developmental pathway allows incremental adoption, and public recognition creates social influence through peer visibility.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Market Signaling Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Spence (1973) established that in markets with information asymmetry, credible signals can resolve uncertainty and create value. Consumers cannot directly observe whether a product supports human functioning — this is a classic information asymmetry. Third-party certification functions as a credible signal that resolves this asymmetry, creating a trust mechanism analogous to LEED for green buildings or Fair Trade for ethical sourcing.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Implementation Science</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Implementation science studies how evidence-based practices are adopted within organizations and systems. WV applies implementation science principles by designing its framework for organizational adoption — embedding evaluation into existing workflows, providing structured tools that reduce adoption friction, and creating feedback loops that make implementation outcomes visible. The developmental pathway (not binary pass/fail) reflects implementation science's emphasis on iterative improvement.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Systems Theory &amp; Feedback Dynamics</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Meadows (2008) identified leverage points — places in complex systems where small interventions produce disproportionate effects. WV targets two of Meadows' highest-leverage intervention points: the rules of the system (what gets measured, evaluated, and rewarded) and the goals of the system (what innovation teams are optimizing for). By making human outcomes visible as design criteria and rewarding their achievement, WV shifts the feedback dynamics of the innovation ecosystem.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Environmental Psychology &amp; Behavioral Mechanisms</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Kaplan and Kaplan (1989), Ulrich (1984), and Sweller (1988) established that environmental conditions influence attentional restoration, stress response, cognitive load, and emotional functioning through identifiable mechanisms. These mechanisms — affordances, reinforcement structures, defaults, feedback loops, choice architecture — provide the evaluative vocabulary WV uses to assess how products influence human functioning. The mechanisms are the same whether applied to understanding individual behavior or to understanding how innovation ecosystems shape design decisions.</p>
+      </div>
+    </div>
+
+    <div class="expandable">
+      <div class="expandable-header" onclick="toggleExpand(this)">
+        <span class="expandable-title">Self-Determination Theory</span>
+        <span class="expandable-icon">+</span>
+      </div>
+      <div class="expandable-body">
+        <p>Deci and Ryan (2000) identified autonomy, competence, and relatedness as fundamental psychological needs. Applied to WV's systems model, this theory informs both the evaluation criteria (does this product support user autonomy, competence, and relatedness?) and the intervention design (does WV's engagement with builders support their autonomy, build their competence in human outcome reasoning, and create professional relatedness through a community of practice?).</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">The Core Distinction</h3>
+    <div class="comparison-model">
+      <div class="comparison-card traditional">
+        <h4>Traditional Model</h4>
+        <div class="comparison-steps">
+          <div class="comparison-step">Identify harm</div>
+          <div class="comparison-step">Impose penalties</div>
+          <div class="comparison-step">Require compliance</div>
+          <div class="comparison-step">Monitor enforcement</div>
+          <div class="comparison-step">Minimum compliance behavior</div>
+        </div>
+      </div>
+      <div class="comparison-card wv-model">
+        <h4>Wellness Verified Model</h4>
+        <div class="comparison-steps">
+          <div class="comparison-step active">Identify potential</div>
+          <div class="comparison-step active">Provide guidance</div>
+          <div class="comparison-step active">Reinforce improvement</div>
+          <div class="comparison-step active">Recognize contribution</div>
+          <div class="comparison-step active">Proactive innovation toward beneficial outcomes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — SYSTEMS CHANGE MODEL
+════════════════════════════════════════════ -->
+<section id="systems-model">
+  <div class="container">
+    <div class="section-num">04 — Systems Change Model</div>
+    <h2>Theory of Change</h2>
+
+    <p>Wellness Verified operates as a strengths-based systems intervention. The following model describes the reinforcement loop through which WV shifts innovation ecosystem behavior over time.</p>
+
+    <div class="model-flow mt3">
+      <div class="model-node accent4-border">
+        <div class="model-node-title">Identify Beneficial Design Patterns</div>
+        <div class="model-node-sub">Using the ten-domain human outcomes taxonomy, identify where products already support human functioning</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Recognize and Signal</div>
+        <div class="model-node-sub">Certification creates a credible, public signal that this product contributes to human functioning</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Create Signaling Value</div>
+        <div class="model-node-sub">Certification creates market differentiation, consumer trust, and reputational advantage</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Create Incentive Value</div>
+        <div class="model-node-sub">Market advantage and professional prestige incentivize other builders to pursue similar recognition</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Increase Adoption of Beneficial Patterns</div>
+        <div class="model-node-sub">More organizations adopt human-supportive design practices to access the same advantages</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node">
+        <div class="model-node-title">Normalize Beneficial Design</div>
+        <div class="model-node-sub">As prevalence increases, human-supportive design shifts from exceptional to expected</div>
+      </div>
+      <div class="model-arrow"></div>
+      <div class="model-node highlight">
+        <div class="model-node-title">Raise Innovation Baseline</div>
+        <div class="model-node-sub">The default standard for what products should do for the people who use them shifts upward</div>
+      </div>
+    </div>
+
+    <div class="feedback-card">
+      <p>↺ <strong>Reinforcing Loop</strong> — Raised baseline creates new expectations → New beneficial design patterns emerge → New recognition opportunities → Further norm elevation → Continuous upward pressure on innovation quality. This is the same reinforcing loop structure described in the Behavioral Loops Field Guide — operating at the ecosystem level rather than the individual level.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Intervention Logic Chain</h3>
+    <div class="pathway mt3">
+      <div class="pathway-step">
+        <div class="pathway-step-num">01</div>
+        <div class="pathway-step-body">
+          <h4>System incentives influence builder behavior</h4>
+          <p>What gets measured, rewarded, and signaled shapes what innovation teams prioritize</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">02</div>
+        <div class="pathway-step-body">
+          <h4>Builder behavior influences design decisions</h4>
+          <p>Priorities translate into specific design features, defaults, algorithms, and interaction structures</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">03</div>
+        <div class="pathway-step-body">
+          <h4>Design decisions influence environmental conditions</h4>
+          <p>Products create behavioral environments with affordances, reinforcement structures, and feedback loops</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">04</div>
+        <div class="pathway-step-body">
+          <h4>Environmental conditions influence human functioning</h4>
+          <p>Users' attention, behavior, emotional experience, social interaction, and knowledge exposure are shaped by these environments</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step" style="border-color: rgba(91,184,169,0.35); background: rgba(91,184,169,0.03);">
+        <div class="pathway-step-num">05</div>
+        <div class="pathway-step-body">
+          <h4>WV intervenes at the incentive layer</h4>
+          <p>By modifying what gets recognized, valued, and rewarded, WV changes the conditions that shape the conditions that shape human functioning</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     05 — HUMAN OUTCOME DOMAINS
+════════════════════════════════════════════ -->
+<section id="domains">
+  <div class="container">
+    <div class="section-num">05 — Human Outcome Domains</div>
+    <h2>Domains of Human Functioning</h2>
+
+    <p>The following taxonomy organizes the domains of human functioning that products influence. These domains serve dual functions within WV: they are both evaluation criteria (what we assess) and recognition categories (what we certify).</p>
+
+    <div class="domain-framework mt3">
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 01 — Behavior Patterns</div>
+        <div class="domain-fw-title">Observable patterns of habit, interaction frequency, and behavioral persistence shaped by product design.</div>
+        <div class="domain-fw-mechs">Mechanisms: Habit formation · Reinforcement dynamics · Choice architecture · Environmental cuing</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 02 — Attention Patterns</div>
+        <div class="domain-fw-title">Quality, duration, and fragmentation of cognitive focus as structured by product architecture.</div>
+        <div class="domain-fw-mechs">Mechanisms: Notification design · Information sequencing · Cognitive switching costs · Attentional capture</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 03 — Cognitive Experience</div>
+        <div class="domain-fw-title">Demands on working memory, decision quality, and information processing capacity.</div>
+        <div class="domain-fw-mechs">Mechanisms: Cognitive load · Decision architecture · Perceived complexity · Information structure</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 04 — Emotional Experience</div>
+        <div class="domain-fw-title">Affective states, emotional regulation, and felt quality of experience during and after interaction.</div>
+        <div class="domain-fw-mechs">Mechanisms: Social comparison · Content exposure · Feedback tone · Autonomy support</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 05 — Social Experience</div>
+        <div class="domain-fw-title">Patterns of connection, comparison, perceived norms, and relational quality in digitally mediated environments.</div>
+        <div class="domain-fw-mechs">Mechanisms: Reciprocity affordances · Social feedback metrics · Passive vs. active interaction structures</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 06 — Knowledge Exposure</div>
+        <div class="domain-fw-title">The informational environment produced by curation and architecture — what individuals encounter, know, and can evaluate.</div>
+        <div class="domain-fw-mechs">Mechanisms: Algorithmic selection · Information diversity · Source quality · Epistemic contestability</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 07 — Motivation &amp; Agency</div>
+        <div class="domain-fw-title">Perceived autonomy, competence support, and alignment between product use and self-directed goals.</div>
+        <div class="domain-fw-mechs">Mechanisms: Default structures · Transparency · Personalization opacity · Goal alignment</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 08 — Identity Processes</div>
+        <div class="domain-fw-title">How products shape self-presentation, identity reinforcement, role experimentation, and social signaling.</div>
+        <div class="domain-fw-mechs">Mechanisms: Identity-relevant cues · Self-presentation affordances · Social role structures</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 09 — Temporal Experience</div>
+        <div class="domain-fw-title">Subjective time perception, usage duration awareness, and temporal boundary clarity.</div>
+        <div class="domain-fw-mechs">Mechanisms: Session boundary design · Time awareness features · Interaction pacing</div>
+      </div>
+
+      <div class="domain-framework-card">
+        <div class="domain-fw-num">Domain 10 — Environmental Exposure</div>
+        <div class="domain-fw-title">Structural characteristics of the interaction environment — information density, stimulus frequency, choice complexity.</div>
+        <div class="domain-fw-mechs">Mechanisms: Environmental defaults · Stimulus architecture · Choice structure design</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     06 — DEVELOPMENTAL PATHWAY
+════════════════════════════════════════════ -->
+<section id="pathway">
+  <div class="container">
+    <div class="section-num">06 — Developmental Pathway</div>
+    <h2>From Evaluation to Development</h2>
+
+    <p>Wellness Verified is not a binary pass/fail system. It is a developmental standards model — a structured pathway through which organizations progressively strengthen their products' contributions to human functioning. Evaluation functions as the beginning of a collaborative process, not the end of a judgmental one.</p>
+
+    <div class="pathway mt3">
+      <div class="pathway-step" style="border-color: rgba(91,184,169,0.35); background: rgba(91,184,169,0.03);">
+        <div class="pathway-step-num">01</div>
+        <div class="pathway-step-body">
+          <h4>Exploratory Assessment</h4>
+          <p>Initial signal of alignment potential. The organization engages with the WV framework to understand how its products relate to human outcome domains. No certification — this is orientation and self-assessment.</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">02</div>
+        <div class="pathway-step-body">
+          <h4>Foundational Alignment</h4>
+          <p>The product demonstrates basic beneficial design characteristics across one or more human outcome domains. The organization has engaged with the evaluation framework and identified opportunities for strengthening.</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">03</div>
+        <div class="pathway-step-body">
+          <h4>Demonstrated Positive Contribution</h4>
+          <p>The product shows clear, identifiable support for specific human outcome domains — grounded in mechanism-level analysis and consistent with behavioral science principles.</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">04</div>
+        <div class="pathway-step-body">
+          <h4>Strong Contribution</h4>
+          <p>The product demonstrates meaningful and consistent beneficial effects across multiple human outcome domains, with evidence of deliberate design intent aligned with human functioning.</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step" style="border-color: rgba(91,184,169,0.35); background: rgba(91,184,169,0.03);">
+        <div class="pathway-step-num">05</div>
+        <div class="pathway-step-body">
+          <h4>Exemplary Environment</h4>
+          <p>The product represents a strong model for human-supportive design — demonstrating positive contributions across domains, deliberate mechanism-level design reasoning, and commitment to ongoing improvement.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="note mt3">The developmental pathway reflects implementation science principles: iterative improvement is more effective than binary compliance. Organizations at any stage receive structured guidance for strengthening their products' human outcome contributions.</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     07 — EVALUATION LENS
+════════════════════════════════════════════ -->
+<section id="lens">
+  <div class="container">
+    <div class="section-num">07 — Evaluation Lens</div>
+    <h2>Multi-Dimensional Analysis</h2>
+
+    <p>The WV evaluation lens examines products along four analytical dimensions — proximal vs. distal effects, direct vs. indirect pathways, temporal scope, and intended vs. emergent outcomes.</p>
+
+    <div class="construct-map mt3">
+      <div class="construct-node primary">Proximal Effects</div>
+      <div class="construct-node primary">Distal Effects</div>
+      <div class="construct-node primary">Direct Pathways</div>
+      <div class="construct-node secondary">Indirect Pathways</div>
+      <div class="construct-node secondary">Short-Term Effects</div>
+      <div class="construct-node secondary">Long-Term Effects</div>
+      <div class="construct-node tertiary">Intended Outcomes</div>
+      <div class="construct-node tertiary">Emergent Outcomes</div>
+      <div class="construct-node tertiary">System-Level Effects</div>
+    </div>
+
+    <div class="mt3">
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Proximal vs. Distal</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Proximal effects are immediate consequences of design decisions — how a notification captures attention in the moment. Distal effects are downstream consequences that manifest over repeated interaction — how habitual notification response patterns reshape sustained attentional capacity over months.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Direct vs. Indirect</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Direct pathways connect design decisions to outcomes through single identifiable mechanisms. Indirect pathways operate through mediating processes — a social comparison feature may influence self-evaluation, which influences mood, which influences behavioral patterns.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Short-Term vs. Long-Term</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Short-term effects occur within a single session. Long-term effects emerge across weeks, months, and years of repeated use — habit formation, cumulative emotional exposure, gradual epistemic narrowing. The most consequential human functioning effects are typically long-term.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Intended vs. Emergent</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Intended outcomes are design goals. Emergent outcomes arise from the interaction of design features with human cognitive and behavioral systems in ways not anticipated during development. WV evaluates both — and treats emergent positive outcomes as opportunities for amplification.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     08 — COMPARATIVE POSITIONING
+════════════════════════════════════════════ -->
+<section id="positioning">
+  <div class="container">
+    <div class="section-num">08 — Comparative Positioning</div>
+    <h2>How WV Relates to Existing Frameworks</h2>
+
+    <p>Wellness Verified operates within the developmental standards tradition — joining frameworks like LEED, B Corp, and WELL Building Standard that create market incentives for beneficial practices rather than enforcing minimum compliance.</p>
+
+    <div class="grid-2 mt3">
+      <div class="card">
+        <h4>LEED (Green Building)</h4>
+        <p style="font-size:0.82rem; color:var(--text-muted);">Parallel: Created a new market category for sustainable construction by making environmental impact visible, measurable, and commercially valuable. Buildings command 31% rent premiums with LEED certification. WV aims to create an equivalent signal for human-supportive design.</p>
+        <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.6rem; margin-bottom:0;">Difference: LEED evaluates physical environments. WV evaluates behavioral environments — including digital systems.</p>
+      </div>
+      <div class="card">
+        <h4>B Corp Certification</h4>
+        <p style="font-size:0.82rem; color:var(--text-muted);">Parallel: Uses comprehensive standards to certify companies that balance profit with positive social impact. Creates identity signaling ("we are a responsible company") that drives voluntary adoption and cultural prestige. WV applies similar identity dynamics to human outcome design.</p>
+        <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.6rem; margin-bottom:0;">Difference: B Corp evaluates organizational practices broadly. WV evaluates specific products' effects on human functioning through mechanism-level analysis.</p>
+      </div>
+      <div class="card">
+        <h4>WELL Building Standard</h4>
+        <p style="font-size:0.82rem; color:var(--text-muted);">Parallel: Evaluates built environments for their effects on human health and wellbeing — air quality, light, thermal comfort, movement, mind. The closest structural analog to WV in existing certification ecosystems.</p>
+        <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.6rem; margin-bottom:0;">Difference: WELL evaluates physical built environments. WV extends the same logic to digital and product environments.</p>
+      </div>
+      <div class="card">
+        <h4>Responsible AI / Ethical Tech</h4>
+        <p style="font-size:0.82rem; color:var(--text-muted);">Parallel: Addresses concerns about technology's effects on people. Growing area of industry and policy attention.</p>
+        <p style="font-size:0.75rem; color:var(--text-dim); margin-top:0.6rem; margin-bottom:0;">Difference: Most responsible AI frameworks focus on fairness, bias, and transparency. WV focuses on behavioral, cognitive, emotional, social, and epistemic outcomes — a broader human functioning lens. And WV uses strengths-based incentives rather than risk-only frameworks.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     09 — RESEARCH QUESTIONS
+════════════════════════════════════════════ -->
+<section id="research-questions">
+  <div class="container">
+    <div class="section-num">09 — Research Questions</div>
+    <h2>Lines of Inquiry</h2>
+
+    <div class="rq-primary">
+      <div class="label">Primary Research Question</div>
+      <div class="question">How can strengths-based behavioral change principles be applied at the innovation ecosystem level to increase the prevalence of designed environments that support human functioning?</div>
+    </div>
+
+    <div class="rq-secondary">
+      <div class="rq-item">
+        <div class="rq-num">RQ1</div>
+        <div class="rq-text">What incentive structures most effectively shift innovation ecosystem behavior toward human-supportive design practices?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ2</div>
+        <div class="rq-text">How can recognition and market signaling create reinforcing feedback loops that normalize beneficial design?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ3</div>
+        <div class="rq-text">What domains of human functioning are most consistently influenced by product design across interdisciplinary research?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ4</div>
+        <div class="rq-text">How can developmental evaluation pathways support iterative improvement in products' human outcome contributions?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ5</div>
+        <div class="rq-text">What distinguishes strengths-based innovation frameworks from risk-only approaches in terms of adoption, engagement, and design quality outcomes?</div>
+      </div>
+      <div class="rq-item">
+        <div class="rq-num">RQ6</div>
+        <div class="rq-text">How can interdisciplinary collaboration — across behavioral science, UX research, public health, and product design — be structured to support robust human outcome evaluation?</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     10 — METHODOLOGY
+════════════════════════════════════════════ -->
+<section id="methodology">
+  <div class="container">
+    <div class="section-num">10 — Research Approach</div>
+    <h2>Methodology</h2>
+
+    <p>This project employs an integrative methodology combining interdisciplinary literature synthesis, framework development, and applied toolkit design.</p>
+
+    <div class="grid-3 mt3">
+      <div class="method-card">
+        <div class="method-icon">📚</div>
+        <div class="method-name">Interdisciplinary Literature Synthesis</div>
+        <div class="method-desc">Systematic review across behavioral science, social work, environmental psychology, implementation science, innovation diffusion, market signaling, and HCI</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🔧</div>
+        <div class="method-name">Framework &amp; Toolkit Design</div>
+        <div class="method-desc">Iterative development of evaluation lenses, developmental pathways, and structured reasoning tools for design and research teams</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">⚖️</div>
+        <div class="method-name">Comparative Standards Analysis</div>
+        <div class="method-desc">Systematic comparison of WV's approach with LEED, B Corp, WELL, Fair Trade, and Responsible AI frameworks</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🗺</div>
+        <div class="method-name">Systems-Level Mechanism Mapping</div>
+        <div class="method-desc">Mapping how incentive structures, market signals, and professional norms shape innovation ecosystem behavior</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">🎙</div>
+        <div class="method-name">Practitioner Testing (Future)</div>
+        <div class="method-desc">Testing framework legibility, workflow integration, and adoption dynamics with UX researchers, product designers, and behavioral scientists</div>
+      </div>
+      <div class="method-card">
+        <div class="method-icon">📊</div>
+        <div class="method-name">Adoption &amp; Outcome Tracking (Future)</div>
+        <div class="method-desc">Measuring whether WV engagement influences design decisions, product characteristics, and human outcome metrics over time</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     11 — RESEARCH ARTIFACTS
+════════════════════════════════════════════ -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-num">11 — Research Artifacts</div>
+    <h2>Conceptual Artifacts</h2>
+
+    <div class="grid-2 mt3">
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🔄</div>
+        <div class="artifact-name">Systems Change Reinforcement Loop</div>
+        <div class="artifact-note">Beneficial design → recognition → trust → market advantage → adoption → norm shift → raised baseline</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🌐</div>
+        <div class="artifact-name">Human Outcome Domains Map</div>
+        <div class="artifact-note">Ten-domain taxonomy with mechanism pathways and cross-domain relationships</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📈</div>
+        <div class="artifact-name">Developmental Pathway Model</div>
+        <div class="artifact-note">Five-stage maturity pathway from exploratory assessment to exemplary environment</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⚡</div>
+        <div class="artifact-name">Intervention Logic Chain</div>
+        <div class="artifact-note">System incentives → builder behavior → design decisions → environmental conditions → human functioning</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">⚖️</div>
+        <div class="artifact-name">Comparative Framework Positioning</div>
+        <div class="artifact-note">WV positioned against LEED, B Corp, WELL, Responsible AI — showing structural parallels and distinctions</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🗺</div>
+        <div class="artifact-name">Design Team Toolkit Architecture</div>
+        <div class="artifact-note">Nine structured reasoning tools organized into an evaluation workflow sequence</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">📐</div>
+        <div class="artifact-name">Risk-Only vs. Strengths-Based Comparison</div>
+        <div class="artifact-note">Side-by-side comparison of enforcement models vs. developmental recognition models</div>
+      </div>
+      <div class="artifact-placeholder">
+        <div class="artifact-icon">🧭</div>
+        <div class="artifact-name">Ecosystem Feedback Dynamics Map</div>
+        <div class="artifact-note">How market signals, professional norms, and organizational metrics interact to shape design behavior</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     12 — APPLIED WORKFLOW TOOLS
+════════════════════════════════════════════ -->
+<section id="toolkit">
+  <div class="container">
+    <div class="section-num">12 — Design Team Toolkit</div>
+    <h2>Applied Workflow Tools</h2>
+
+    <p>These tools are designed as collaborative reasoning supports — helping design teams identify, understand, and strengthen their products' contributions to human functioning.</p>
+
+    <div class="grid-3 mt3">
+      <div class="card">
+        <h4>Human Outcomes Mapping Canvas</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Structured template for mapping a product's influence across the ten human outcome domains — identifying strengths, opportunities, and evaluation gaps.</p>
+      </div>
+      <div class="card">
+        <h4>Mechanism Identification Worksheet</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Guided analysis for identifying which behavioral mechanisms — reinforcement structures, affordances, defaults, feedback loops — are embedded in a product's design.</p>
+      </div>
+      <div class="card">
+        <h4>Loop Identification Tool</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Structured protocol for identifying which behavioral loops operate within a product, drawing on the Behavioral Loops Field Guide taxonomy.</p>
+      </div>
+      <div class="card">
+        <h4>Strengths Amplification Scanner</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Tool for identifying where a product already supports human functioning — and how those beneficial features can be strengthened, extended, or made more visible.</p>
+      </div>
+      <div class="card">
+        <h4>Proximal vs. Distal Effects Map</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Mapping tool distinguishing immediate interaction effects from cumulative long-term outcomes across human functioning domains.</p>
+      </div>
+      <div class="card">
+        <h4>Human Outcomes Opportunity Scan</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Identifying domains where product design could produce positive effects on human functioning that are not currently measured or communicated.</p>
+      </div>
+      <div class="card">
+        <h4>Design Decision Impact Map</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Connecting specific design decisions to predicted human outcome effects — making the mechanism-outcome relationship explicit.</p>
+      </div>
+      <div class="card">
+        <h4>Feedback Loop Identification Guide</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Tracing how user behavioral data feeds back into system adaptation — making adaptive loops visible for evaluation and design.</p>
+      </div>
+      <div class="card">
+        <h4>Developmental Readiness Assessment</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Self-assessment tool helping organizations determine their current position on the developmental pathway and identify next steps.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">Evaluation Workflow Sequence</h3>
+    <div class="pathway">
+      <div class="pathway-step">
+        <div class="pathway-step-num">01</div>
+        <div class="pathway-step-body">
+          <h4>Identify interaction environment</h4>
+          <p>Define the product, feature, or system being evaluated</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">02</div>
+        <div class="pathway-step-body">
+          <h4>Map strengths</h4>
+          <p>Identify where the product already supports human functioning across outcome domains</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">03</div>
+        <div class="pathway-step-body">
+          <h4>Identify mechanisms</h4>
+          <p>Map which behavioral mechanisms are embedded in the design — reinforcement, affordances, defaults, feedback</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">04</div>
+        <div class="pathway-step-body">
+          <h4>Identify loop structures</h4>
+          <p>Document which behavioral loops operate and their structural properties</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">05</div>
+        <div class="pathway-step-body">
+          <h4>Assess proximal and distal effects</h4>
+          <p>Trace both immediate and cumulative effects across domains</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step">
+        <div class="pathway-step-num">06</div>
+        <div class="pathway-step-body">
+          <h4>Identify opportunities</h4>
+          <p>Where can existing strengths be amplified? Where do new opportunities exist?</p>
+        </div>
+      </div>
+      <div class="pathway-connector"></div>
+      <div class="pathway-step" style="border-color: rgba(91,184,169,0.35); background: rgba(91,184,169,0.03);">
+        <div class="pathway-step-num">07</div>
+        <div class="pathway-step-body">
+          <h4>Develop improvement pathway</h4>
+          <p>Create a structured plan for strengthening human outcome contributions toward the next developmental stage</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     13 — EXAMPLE APPLICATION
+════════════════════════════════════════════ -->
+<section id="example">
+  <div class="container">
+    <div class="section-num">13 — Example Application</div>
+    <h2>Illustrative Use Case</h2>
+
+    <p>The following example demonstrates how the Wellness Verified framework could be applied to a hypothetical learning platform feature. This is a strengths-focused illustration — identifying beneficial patterns and opportunities for amplification.</p>
+
+    <div class="note mb2">Hypothetical example for illustrative purposes only.</div>
+
+    <div class="card mt3" style="border-color: rgba(91,184,169,0.3);">
+      <h3>Feature: Adaptive Learning Platform with Progress Tracking</h3>
+    </div>
+
+    <div class="mt2">
+      <div class="expandable open">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 1 — Interaction Environment</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>An online learning platform with adaptive difficulty, progress tracking, spaced repetition, and peer discussion features. Users engage with structured learning modules, receive skill-based feedback, and participate in community discussion forums.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 2 — Strengths Identified</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Skill Development Loop actively operating (practice → competence feedback → self-efficacy → continued practice). Progress Feedback Loop provides clear advancement signals. Spaced repetition aligns with memory consolidation research. Adaptive difficulty supports flow state conditions. Community discussion supports social learning and belongingness.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 3 — Mechanisms Present</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Mastery motivation reinforcement (competence feedback strengthens practice behavior). Goal-gradient effect (progress indicators accelerate engagement as milestones approach). Social learning dynamics (peer discussion normalizes struggle and supports collaborative meaning-making). Autonomy support (learner controls pacing and topic selection within structured curriculum).</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 4 — Human Outcome Domains Supported</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Cognitive experience: Adaptive difficulty manages cognitive load. Motivation and agency: Progress tracking supports self-efficacy and perceived competence. Social experience: Discussion forums support belonging and peer connection. Behavior patterns: Spaced repetition supports adaptive study habits. Identity processes: Skill mastery reinforces learner identity.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 5 — Proximal and Distal Effects</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Proximal: Immediate competence feedback, session-level progress signals, community interaction. Distal: Skill development over weeks and months, study habit formation, learner identity strengthening, professional confidence building.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 6 — Opportunities for Strengthening</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Attention domain: Could introduce session boundary awareness features to support sustainable study patterns. Temporal experience: Could add time awareness tools that help learners maintain healthy study rhythms. Emotional experience: Could strengthen emotional support during frustration moments rather than only rewarding success. Knowledge exposure: Could introduce diverse perspective features in discussion forums.</p>
+        </div>
+      </div>
+      <div class="expandable">
+        <div class="expandable-header" onclick="toggleExpand(this)">
+          <span class="expandable-title">Step 7 — Developmental Pathway Position</span>
+          <span class="expandable-icon">+</span>
+        </div>
+        <div class="expandable-body">
+          <p>Current assessment: Stage 3 — Demonstrated Positive Contribution. The platform shows clear support for multiple human outcome domains (cognition, motivation, social experience) with identifiable mechanism-level design reasoning. Pathway to Stage 4: Strengthening attention and temporal experience domains, adding emotional support features, and demonstrating consistent positive effects across a broader range of user populations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     14 — SYNTHESIS
+════════════════════════════════════════════ -->
+<section id="synthesis">
+  <div class="container">
+    <div class="section-num">14 — Synthesis</div>
+    <h2>Emerging Themes</h2>
+
+    <div class="synthesis-theme">
+      <p>The most effective way to change what products do to people is to change what gets recognized, valued, and rewarded in the innovation ecosystem. Intervening at the incentive layer is higher leverage than intervening at the product layer — because incentives shape the conditions that shape all products.</p>
+    </div>
+    <div class="synthesis-theme">
+      <p>Strengths-based approaches produce qualitatively different innovation dynamics than risk-only frameworks. Recognition of beneficial design generates engagement, creativity, voluntary adoption, identity formation, and peer diffusion. Penalty for harmful design generates compliance, defensiveness, and minimum effort.</p>
+    </div>
+    <div class="synthesis-theme">
+      <p>Human outcome evaluation does not require replacing existing product metrics. It requires supplementing engagement, usability, and performance measures with structured lenses that surface additional dimensions of product impact — making the full range of design consequences visible for deliberate consideration.</p>
+    </div>
+    <div class="synthesis-theme">
+      <p>The developmental standards model — iterative improvement through collaborative guidance rather than binary pass/fail judgment — aligns with how organizations actually change. Implementation science consistently shows that sustained change requires ongoing support, visible progress, and social reinforcement.</p>
+    </div>
+    <div class="synthesis-theme">
+      <p>The recursive structure of WV — using behavioral mechanisms to change the systems that produce behavioral environments — is itself a demonstration of the framework's core thesis: that behavioral science can inform not just the design of products but the design of the systems that design products.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     15 — KEY INSIGHTS
+════════════════════════════════════════════ -->
+<section id="insights">
+  <div class="container">
+    <div class="section-num">15 — Key Insights</div>
+    <h2>Research Insights</h2>
+
+    <div class="note mb2">Framed as conceptual reasoning grounded in interdisciplinary research — not as validated empirical claims.</div>
+
+    <div class="insight-list mt3">
+      <div class="insight-item">
+        <div class="insight-num">01</div>
+        <div class="insight-body">
+          <div class="insight-title">The intervention target is not user behavior — it is the conditions shaping design decisions</div>
+          <div class="insight-desc">WV operates at the incentive layer of the innovation ecosystem. By changing what gets recognized, valued, and rewarded, it changes the behavioral environment facing builders — which changes what gets built, which changes what users experience. This is systems-level behavioral change.</div>
+          <span class="insight-tag">Systems Intervention</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">02</div>
+        <div class="insight-body">
+          <div class="insight-title">Recognition creates a reinforcing loop that enforcement cannot produce</div>
+          <div class="insight-desc">Strengths-based recognition generates engagement, identity formation ("we are a human-supportive builder"), reputational competition, and voluntary peer diffusion. These dynamics are structurally unavailable to enforcement-only frameworks, which produce compliance without cultural change.</div>
+          <span class="insight-tag">Incentive Design</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">03</div>
+        <div class="insight-body">
+          <div class="insight-title">Products are behavioral environments — and evaluation should account for this</div>
+          <div class="insight-desc">Every designed product constitutes a behavioral environment with affordances, reinforcement structures, defaults, and feedback loops. Evaluating products only as tools that serve primary functions misses their structural influence on human behavior, cognition, emotion, social experience, and knowledge.</div>
+          <span class="insight-tag">Behavioral Mechanisms</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">04</div>
+        <div class="insight-body">
+          <div class="insight-title">Human outcome effects span multiple domains that interact — single-domain evaluation is insufficient</div>
+          <div class="insight-desc">A product may simultaneously influence attention, emotional experience, social comparison, knowledge exposure, and perceived agency through interacting pathways. Evaluation that examines any single domain in isolation systematically underrepresents the product's total influence.</div>
+          <span class="insight-tag">Multi-Domain Effects</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">05</div>
+        <div class="insight-body">
+          <div class="insight-title">Developmental pathways produce better outcomes than binary certification</div>
+          <div class="insight-desc">Implementation science shows that organizations change through iterative improvement, not through compliance checkpoints. A developmental model — where any organization can enter, receive guidance, and progress — creates more sustained improvement than pass/fail systems.</div>
+          <span class="insight-tag">Developmental Standards</span>
+        </div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">06</div>
+        <div class="insight-body">
+          <div class="insight-title">Making human outcomes visible creates innovation opportunity, not constraint</div>
+          <div class="insight-desc">Products that can demonstrate positive contributions to human functioning have a differentiation advantage, a trust advantage, and a long-term engagement quality advantage that engagement metrics alone cannot provide. Human outcome visibility is a competitive resource.</div>
+          <span class="insight-tag">Innovation Alignment</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     16 — IMPLICATIONS FOR RESEARCH
+════════════════════════════════════════════ -->
+<section id="research-implications">
+  <div class="container">
+    <div class="section-num">16 — Implications for Research</div>
+    <h2>Research Implications</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Systems-Level Behavioral Change Measurement</h4>
+        <p>Developing measures for innovation ecosystem behavior change — tracking whether recognition, incentive alignment, and norm formation actually shift design practices over time.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Comparative Framework Effectiveness</h4>
+        <p>Studying whether strengths-based developmental models produce different adoption, engagement, and design quality outcomes than risk-only enforcement models.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Human Outcome Measurement Development</h4>
+        <p>Validated instruments for assessing human functioning effects across the ten outcome domains in product interaction contexts.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Diffusion Dynamics Research</h4>
+        <p>Studying how human-supportive design practices spread through innovation ecosystems — what adoption patterns, social influence mechanisms, and market conditions accelerate diffusion.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     17 — IMPLICATIONS FOR PRACTICE
+════════════════════════════════════════════ -->
+<section id="practice-implications">
+  <div class="container">
+    <div class="section-num">17 — Implications for Practice</div>
+    <h2>Practice Implications</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Collaborative Evaluation Integration</h4>
+        <p>Engaging with product teams as a developmental partner — providing structured guidance, not adversarial judgment — and embedding human outcome evaluation into existing design workflows.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Behavioral Science Literacy Building</h4>
+        <p>Helping design teams develop the capacity to identify the behavioral mechanisms operating in their products — building internal competence rather than creating external dependency.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Strengths Communication</h4>
+        <p>Helping organizations communicate their products' human functioning contributions to users, stakeholders, and governance bodies — building trust through transparency.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Innovation Community Development</h4>
+        <p>Building a professional community of practice around human-supportive design — creating the social infrastructure through which norms form and peer influence operates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     18 — COLLABORATION MODEL
+════════════════════════════════════════════ -->
+<section id="collaboration">
+  <div class="container">
+    <div class="section-num">18 — Collaboration Model</div>
+    <h2>Interdisciplinary Integration</h2>
+
+    <p>Effective evaluation of products' human effects requires collaboration across disciplines. WV functions as shared conceptual infrastructure — providing common vocabulary and structured tools that make cross-disciplinary collaboration productive.</p>
+
+    <div class="grid-3 mt3">
+      <div class="card">
+        <h4>UX Research</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">User behavior data, interaction patterns, qualitative experience research, usability evaluation methods, design workflow knowledge</p>
+      </div>
+      <div class="card">
+        <h4>Behavioral Science</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Mechanism identification, reinforcement analysis, habit models, choice architecture evaluation, strengths-based intervention design</p>
+      </div>
+      <div class="card">
+        <h4>Data Science &amp; AI</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Algorithmic behavior analysis, personalization dynamics, feedback loop modeling, system-level pattern detection</p>
+      </div>
+      <div class="card">
+        <h4>Public Health &amp; Social Science</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Population-level outcome frameworks, wellbeing measurement, epidemiological methods, prevention science, strengths-based practice theory</p>
+      </div>
+      <div class="card">
+        <h4>Implementation Science</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Adoption dynamics, organizational change models, iterative improvement frameworks, scaling evidence-based practices</p>
+      </div>
+      <div class="card">
+        <h4>Product Design &amp; Engineering</h4>
+        <p style="font-size:0.82rem; margin:0; color:var(--text-muted);">Design decision context, implementation constraints, organizational workflow, technical feasibility, innovation culture</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     19 — REFLECTION
+════════════════════════════════════════════ -->
+<section id="reflection">
+  <div class="container">
+    <div class="section-num">19 — Reflection</div>
+    <h2>Scope &amp; Limitations</h2>
+
+    <div class="limitation-grid mt3">
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">This is a conceptual framework and systems intervention model — not a validated certification system. The approach is grounded in interdisciplinary theory but has not been empirically tested for its capacity to shift innovation ecosystem behavior.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The ten-domain taxonomy may not capture all relevant dimensions of human functioning. Additional domains may emerge as the framework is applied.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The systems-level behavioral change model assumes that recognition and incentive alignment can shift innovation ecosystem dynamics — an assumption that requires empirical validation.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The developmental pathway stages are conceptual and would require operationalization, reliability testing, and inter-rater agreement development before applied use.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The comparative positioning with LEED, B Corp, and WELL is structural — WV has not yet achieved the market penetration, institutional integration, or empirical track record of these established frameworks.</div>
+      </div>
+      <div class="limitation-item">
+        <div class="limitation-dot"></div>
+        <div class="limitation-text">The framework has not yet been tested with practitioners. Its practical utility, workflow integration, and organizational adoption dynamics require validation.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h3 class="mb2">What This Project Demonstrates</h3>
+    <div class="grid-2">
+      <div class="card">
+        <h4>Research Capabilities</h4>
+        <ul class="cap-list">
+          <li>Interdisciplinary synthesis across eight theoretical traditions</li>
+          <li>Systems-level behavioral change modeling</li>
+          <li>Mechanism-level reasoning about environment-behavior relationships</li>
+          <li>Ten-domain human outcomes taxonomy development</li>
+          <li>Theory of change construction with intervention logic</li>
+          <li>Comparative framework analysis</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Applied &amp; Strategic Thinking</h4>
+        <ul class="cap-list">
+          <li>Translation of behavioral science into systems-level intervention design</li>
+          <li>Toolkit development for practitioner adoption</li>
+          <li>Strengths-based framing as an alternative to risk-only approaches</li>
+          <li>Incentive design reasoning applied to innovation ecosystems</li>
+          <li>Developmental standards model design</li>
+          <li>Cross-domain applicability from digital to physical environments</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     20 — NEXT STEPS
+════════════════════════════════════════════ -->
+<section id="next-steps">
+  <div class="container">
+    <div class="section-num">20 — Next Steps</div>
+    <h2>Future Research Directions</h2>
+
+    <div class="next-step-grid mt3">
+      <div class="next-step-card">
+        <h4 class="accent4">Pilot Certification Program</h4>
+        <p>Testing the developmental pathway with a small cohort of products across categories — evaluating the framework's capacity to identify beneficial design, guide improvement, and produce meaningful certification outcomes.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Practitioner &amp; Builder Engagement</h4>
+        <p>Testing the toolkit and evaluation workflow with UX researchers, product designers, and organizational leaders — refining based on adoption dynamics and practical feedback.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Ecosystem Dynamics Research</h4>
+        <p>Studying whether WV recognition influences market signals, professional norms, and builder behavior over time — testing the systems-level reinforcement loop empirically.</p>
+      </div>
+      <div class="next-step-card">
+        <h4>Interdisciplinary Community Building</h4>
+        <p>Establishing a collaborative community of practice across behavioral science, UX research, public health, and product design — creating the social infrastructure for sustained norm formation.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer>
+  <div class="container">
+    <p>Omar Alexander Pedroza · Applied Wellness Innovation Studio · 2025</p>
+    <p style="margin-top:0.4rem; font-size:0.72rem;">Conceptual Research Artifact — Strengths-Based Systems Intervention Model</p>
+  </div>
+</footer>
+
+<script>
+  // ── Progress Bar ──
+  const bar = document.getElementById('progress-bar');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (window.scrollY / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  // ── Expandable sections ──
+  function toggleExpand(header) {
+    const el = header.closest('.expandable');
+    el.classList.toggle('open');
+  }
+
+  // ── Smooth fade-in on scroll ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('section').forEach(s => {
+    s.style.opacity = '0';
+    s.style.transform = 'translateY(18px)';
+    s.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+    observer.observe(s);
+  });
+
+  // Hero is always visible
+  document.querySelector('.hero').style.opacity = '1';
+  document.querySelector('.hero').style.transform = 'none';
+</script>
+</body>
+</html>
