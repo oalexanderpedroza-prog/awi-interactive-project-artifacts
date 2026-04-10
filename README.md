@@ -10,7 +10,7 @@ Rather than focusing only on isolated user interactions, this body of work explo
 
 ---
 
-## Core Themes
+ Core Themes
 
 • Behavioral science applied to real-world systems  
 • Human-centered research and insight synthesis  
