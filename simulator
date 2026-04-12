@@ -1,0 +1,415 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Settings, 
+  Users, 
+  TrendingUp, 
+  Zap, 
+  Clock, 
+  Info, 
+  RefreshCcw, 
+  Layers,
+  Activity,
+  ShieldCheck,
+  ArrowRight,
+  Split
+} from 'lucide-react';
+
+const App = () => {
+  // --- Simulation Constants & Logic ---
+  const INPUT_VARIABLES = {
+    friction: { label: 'User Flow Friction', min: 0, max: 100, default: 40, unit: '%', desc: 'Resistance encountered during tasks' },
+    defaultSettings: { label: 'Default Permissiveness', min: 0, max: 100, default: 70, unit: '%', desc: 'How much is "on" by default' },
+    notificationFreq: { label: 'Notification Frequency', min: 0, max: 100, default: 60, unit: '%', desc: 'How often users are interrupted' },
+    personalization: { label: 'Personalization Intensity', min: 0, max: 100, default: 50, unit: '%', desc: 'Depth of algorithmic targeting' },
+    transparency: { label: 'Transparency Level', min: 0, max: 100, default: 30, unit: '%', desc: 'Clarity of system logic & data use' },
+    autonomy: { label: 'User Autonomy', min: 0, max: 100, default: 50, unit: '%', desc: 'Degree of user control/choice' },
+    rewardVariability: { label: 'Reward Variability', min: 0, max: 100, default: 80, unit: '%', desc: 'Unpredictability of positive feedback' },
+  };
+
+  const [scenarioA, setScenarioA] = useState(
+    Object.keys(INPUT_VARIABLES).reduce((acc, key) => ({ ...acc, [key]: INPUT_VARIABLES[key].default }), {})
+  );
+  const [scenarioB, setScenarioB] = useState(
+    Object.keys(INPUT_VARIABLES).reduce((acc, key) => ({ ...acc, [key]: INPUT_VARIABLES[key].default }), {})
+  );
+  
+  const [viewMode, setViewMode] = useState('single'); // 'single' or 'compare'
+  const [timeHorizon, setTimeHorizon] = useState('long'); // 'short' or 'long'
+  const [activeTab, setActiveTab] = useState('mechanisms');
+
+  // --- The Engine ---
+  const calculateOutcomes = (inputs) => {
+    const { friction, defaultSettings, notificationFreq, personalization, transparency, autonomy, rewardVariability } = inputs;
+    
+    // 1. Mechanisms (0-100)
+    const mechanisms = {
+      cognitiveLoad: Math.min(100, (friction * 0.4) + (notificationFreq * 0.4) + (personalization * 0.2)),
+      trust: Math.min(100, (transparency * 0.6) + (autonomy * 0.3) - (defaultSettings * 0.2) + 20),
+      habitFormation: Math.min(100, (rewardVariability * 0.5) + (notificationFreq * 0.3) + (personalization * 0.2)),
+      perceivedAgency: Math.min(100, (autonomy * 0.7) - (defaultSettings * 0.3) + 30),
+      attentionFragmentation: Math.min(100, (notificationFreq * 0.8) + (rewardVariability * 0.2)),
+      decisionFatigue: Math.min(100, (personalization * 0.4) + (notificationFreq * 0.3) + (100 - transparency) * 0.3)
+    };
+
+    // 2. Intermediate Outcomes
+    const intermediate = {
+      taskCompletion: Math.max(0, 80 - (mechanisms.cognitiveLoad * 0.5) + (personalization * 0.2)),
+      engagementQuality: Math.max(0, (mechanisms.perceivedAgency * 0.6) - (mechanisms.attentionFragmentation * 0.4) + 40),
+      satisfaction: Math.max(0, (mechanisms.trust * 0.4) + (mechanisms.perceivedAgency * 0.3) - (mechanisms.cognitiveLoad * 0.3) + 30)
+    };
+
+    // 3. Impact (Weighted by Time Horizon)
+    const isLongTerm = timeHorizon === 'long';
+    const wellbeing = Math.max(0, 
+      (mechanisms.perceivedAgency * 0.5) + (mechanisms.trust * 0.3) - 
+      (isLongTerm ? mechanisms.attentionFragmentation * 0.6 : mechanisms.attentionFragmentation * 0.2)
+    );
+
+    // FIX: Pull conversion out to avoid ReferenceError when calculating LTV
+    const conversion = Math.min(100, (personalization * 0.4) + (80 - friction * 0.3));
+    
+    const business = {
+      conversion: conversion,
+      retention: isLongTerm 
+        ? Math.max(0, (mechanisms.trust * 0.5) + (wellbeing * 0.3) + (intermediate.engagementQuality * 0.2))
+        : Math.min(100, (mechanisms.habitFormation * 0.7) + (personalization * 0.3)),
+      ltv: isLongTerm
+        ? Math.max(0, (mechanisms.trust * 0.6) + (wellbeing * 0.4))
+        : Math.min(100, (mechanisms.habitFormation * 0.5) + (conversion * 0.5))
+    };
+
+    return { mechanisms, intermediate, wellbeing, business };
+  };
+
+  const resultsA = useMemo(() => calculateOutcomes(scenarioA), [scenarioA, timeHorizon]);
+  const resultsB = useMemo(() => calculateOutcomes(scenarioB), [scenarioB, timeHorizon]);
+
+  const updateScenario = (scenario, key, value) => {
+    const numericVal = parseInt(value, 10) || 0;
+    if (scenario === 'A') setScenarioA(prev => ({ ...prev, [key]: numericVal }));
+    else setScenarioB(prev => ({ ...prev, [key]: numericVal }));
+  };
+
+  const ProgressBar = ({ label, value, color = "bg-blue-500", icon: Icon }) => (
+    <div className="mb-4">
+      <div className="flex justify-between items-center mb-1">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+          {Icon && <Icon size={14} className="text-slate-400" />}
+          {label}
+        </div>
+        <span className="text-xs font-bold text-slate-500">{Math.round(value)}%</span>
+      </div>
+      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+        <div 
+          className={`h-full transition-all duration-500 ${color}`} 
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
+        />
+      </div>
+    </div>
+  );
+
+  const ControlPanel = ({ scenario, setVal, values }) => (
+    <div className="space-y-4 p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
+      <h3 className="font-bold text-slate-800 flex items-center gap-2 border-b pb-2">
+        <Settings size={18} /> Design Inputs {scenario && `(Scenario ${scenario})`}
+      </h3>
+      <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto pr-2">
+        {Object.entries(INPUT_VARIABLES).map(([key, config]) => (
+          <div key={key} className="space-y-1">
+            <div className="flex justify-between text-xs">
+              <label className="font-semibold text-slate-600">{config.label}</label>
+              <span className="text-blue-600 font-mono">{values[key]}{config.unit}</span>
+            </div>
+            <input 
+              type="range"
+              min={config.min}
+              max={config.max}
+              value={values[key]}
+              onChange={(e) => setVal(scenario, key, e.target.value)}
+              className="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            <p className="text-[10px] text-slate-400 leading-tight">{config.desc}</p>
+          </div>
+        ))}
+      </div>
+      <button 
+        onClick={() => {
+          const defaults = Object.keys(INPUT_VARIABLES).reduce((acc, key) => ({ ...acc, [key]: INPUT_VARIABLES[key].default }), {});
+          if(scenario === 'A') setScenarioA(defaults);
+          else setScenarioB(defaults);
+        }}
+        className="flex items-center gap-2 text-xs text-slate-500 hover:text-blue-600 transition-colors pt-2"
+      >
+        <RefreshCcw size={14} /> Reset to Baseline
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-4 md:p-8">
+      {/* Header */}
+      <header className="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Responsible Design <span className="text-blue-600 underline decoration-blue-200">Simulator</span>
+          </h1>
+          <p className="text-slate-500 mt-1 max-w-xl">
+            Explore how micro-design choices trigger psychological mechanisms that eventually dictate user wellbeing and business sustainability.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm self-start">
+          <button 
+            onClick={() => setViewMode('single')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${viewMode === 'single' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+          >
+            Single Mode
+          </button>
+          <button 
+            onClick={() => setViewMode('compare')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${viewMode === 'compare' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-slate-50'}`}
+          >
+            <Split size={16} /> Compare
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* LEFT: INPUTS */}
+        <div className={`lg:col-span-3 space-y-6`}>
+          <ControlPanel scenario="A" setVal={updateScenario} values={scenarioA} />
+          {viewMode === 'compare' && (
+             <ControlPanel scenario="B" setVal={updateScenario} values={scenarioB} />
+          )}
+        </div>
+
+        {/* RIGHT: RESULTS */}
+        <div className="lg:col-span-9 space-y-6">
+          
+          {/* Time Horizon Toggle */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Clock size={20} className="text-slate-400" />
+              <div>
+                <span className="text-sm font-bold block">Simulation Horizon</span>
+                <p className="text-xs text-slate-500">How long do effects accumulate?</p>
+              </div>
+            </div>
+            <div className="flex bg-slate-100 p-1 rounded-lg">
+              <button 
+                onClick={() => setTimeHorizon('short')}
+                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${timeHorizon === 'short' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                Short-Term
+              </button>
+              <button 
+                onClick={() => setTimeHorizon('long')}
+                className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${timeHorizon === 'long' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
+              >
+                Long-Term
+              </button>
+            </div>
+          </div>
+
+          {/* Result Tabs */}
+          <div className="flex gap-4 border-b border-slate-200 overflow-x-auto pb-px">
+            {[
+              { id: 'mechanisms', label: 'Causal Mechanisms', icon: Zap },
+              { id: 'wellbeing', label: 'User Outcomes', icon: ShieldCheck },
+              { id: 'business', label: 'Business Impact', icon: TrendingUp },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${
+                  activeTab === tab.id ? 'border-blue-600 text-blue-600 bg-blue-50/50' : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <tab.icon size={16} />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Dynamic Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Scenario A Results */}
+            <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm relative ${viewMode === 'compare' ? 'ring-2 ring-blue-50' : ''}`}>
+              {viewMode === 'compare' && <div className="absolute -top-3 left-6 bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Scenario A</div>}
+              
+              {activeTab === 'mechanisms' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Psychological Shifts</h4>
+                  <ProgressBar label="Cognitive Load" value={resultsA.mechanisms.cognitiveLoad} color="bg-orange-400" icon={Activity} />
+                  <ProgressBar label="Trust Formation" value={resultsA.mechanisms.trust} color="bg-emerald-500" icon={ShieldCheck} />
+                  <ProgressBar label="Attention Fragmentation" value={resultsA.mechanisms.attentionFragmentation} color="bg-red-400" icon={Zap} />
+                  <ProgressBar label="Perceived Agency" value={resultsA.mechanisms.perceivedAgency} color="bg-indigo-500" icon={Users} />
+                  <ProgressBar label="Habit Formation" value={resultsA.mechanisms.habitFormation} color="bg-purple-500" />
+                </div>
+              )}
+
+              {activeTab === 'wellbeing' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Long-Term Wellbeing</h4>
+                  <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-bold text-slate-700">Aggregate Wellbeing Score</span>
+                      <p className="text-[10px] text-slate-400">Mental health & autonomy impact</p>
+                    </div>
+                    <span className={`text-3xl font-black ${resultsA.wellbeing > 60 ? 'text-emerald-500' : resultsA.wellbeing > 30 ? 'text-orange-400' : 'text-red-500'}`}>
+                      {Math.round(resultsA.wellbeing)}
+                    </span>
+                  </div>
+                  <ProgressBar label="User Satisfaction" value={resultsA.intermediate.satisfaction} color="bg-sky-400" />
+                  <ProgressBar label="Engagement Quality" value={resultsA.intermediate.engagementQuality} color="bg-teal-400" />
+                  <ProgressBar label="Task Completion" value={resultsA.intermediate.taskCompletion} color="bg-emerald-400" />
+                </div>
+              )}
+
+              {activeTab === 'business' && (
+                <div className="animate-in fade-in slide-in-from-bottom-2">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Commercial Performance</h4>
+                  <ProgressBar label="Conversion Rate" value={resultsA.business.conversion} color="bg-blue-500" />
+                  <ProgressBar label="User Retention" value={resultsA.business.retention} color="bg-indigo-600" />
+                  <ProgressBar label="Customer Lifetime Value" value={resultsA.business.ltv} color="bg-violet-600" />
+                  <div className="mt-6 p-3 bg-blue-50 rounded-lg text-xs text-blue-700 leading-relaxed border border-blue-100">
+                    <Info size={14} className="inline mr-1 mb-1" />
+                    {timeHorizon === 'short' 
+                      ? "In the short term, high habit formation and low friction drive rapid growth regardless of trust."
+                      : "In the long term, business sustainability depends heavily on user trust and wellbeing levels."
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Scenario B Results / Insight Panel */}
+            {viewMode === 'compare' ? (
+              <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm relative ring-2 ring-purple-50">
+                <div className="absolute -top-3 left-6 bg-purple-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Scenario B</div>
+                
+                {activeTab === 'mechanisms' && (
+                  <div>
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Psychological Shifts</h4>
+                    <ProgressBar label="Cognitive Load" value={resultsB.mechanisms.cognitiveLoad} color="bg-orange-400" />
+                    <ProgressBar label="Trust Formation" value={resultsB.mechanisms.trust} color="bg-emerald-500" />
+                    <ProgressBar label="Attention Fragmentation" value={resultsB.mechanisms.attentionFragmentation} color="bg-red-400" />
+                    <ProgressBar label="Perceived Agency" value={resultsB.mechanisms.perceivedAgency} color="bg-indigo-500" />
+                    <ProgressBar label="Habit Formation" value={resultsB.mechanisms.habitFormation} color="bg-purple-500" />
+                  </div>
+                )}
+
+                {activeTab === 'wellbeing' && (
+                  <div>
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Long-Term Wellbeing</h4>
+                    <div className="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm font-bold text-slate-700">Aggregate Wellbeing Score</span>
+                        <p className="text-[10px] text-slate-400">Mental health & autonomy impact</p>
+                      </div>
+                      <span className={`text-3xl font-black ${resultsB.wellbeing > 60 ? 'text-emerald-500' : resultsB.wellbeing > 30 ? 'text-orange-400' : 'text-red-500'}`}>
+                        {Math.round(resultsB.wellbeing)}
+                      </span>
+                    </div>
+                    <ProgressBar label="User Satisfaction" value={resultsB.intermediate.satisfaction} color="bg-sky-400" />
+                    <ProgressBar label="Engagement Quality" value={resultsB.intermediate.engagementQuality} color="bg-teal-400" />
+                    <ProgressBar label="Task Completion" value={resultsB.intermediate.taskCompletion} color="bg-emerald-400" />
+                  </div>
+                )}
+
+                {activeTab === 'business' && (
+                  <div>
+                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Commercial Performance</h4>
+                    <ProgressBar label="Conversion Rate" value={resultsB.business.conversion} color="bg-blue-500" />
+                    <ProgressBar label="User Retention" value={resultsB.business.retention} color="bg-indigo-600" />
+                    <ProgressBar label="Customer Lifetime Value" value={resultsB.business.ltv} color="bg-violet-600" />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div className="p-6 rounded-2xl bg-slate-900 text-white shadow-xl overflow-hidden relative">
+                  <div className="absolute top-0 right-0 p-8 opacity-10">
+                    <TrendingUp size={120} />
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Strategic Insight</h4>
+                  <div className="text-lg font-medium leading-relaxed">
+                    {resultsA.wellbeing < 40 && timeHorizon === 'long' 
+                      ? "Warning: Your current design creates a 'Wellbeing Trap'. High engagement today may lead to churn as trust erodes over time."
+                      : resultsA.wellbeing > 70 
+                      ? "Synergy Found: You've optimized for Agency and Trust. This typically builds high LTV and organic referrals."
+                      : "Balanced Approach: You are navigating the tradeoff between immediate conversion and user stability."
+                    }
+                  </div>
+                  <div className="mt-6 flex items-center gap-2 text-blue-400 text-sm font-bold cursor-pointer hover:underline">
+                    Read Logic Model Analysis <ArrowRight size={16} />
+                  </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Causal Logic Flow</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">1</div>
+                      <p className="text-xs text-slate-600">Design choice: <b>{scenarioA.notificationFreq > 60 ? 'High Interruption' : 'Respectful Timing'}</b></p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 border-l-2 border-slate-100 pl-4">
+                      <div className="w-6 h-px bg-slate-200"></div>
+                      <p className="text-xs text-slate-600">Mechanism: <b>{resultsA.mechanisms.attentionFragmentation > 50 ? 'Attention Fragmentation' : 'Sustained Focus'}</b></p>
+                    </div>
+                    <div className="flex items-center gap-3 ml-8 border-l-2 border-slate-100 pl-4">
+                      <div className="w-6 h-px bg-slate-200"></div>
+                      <p className="text-xs text-slate-600">Outcome: <b>{resultsA.intermediate.engagementQuality < 50 ? 'Lower Meaningful Engagement' : 'High Quality Time'}</b></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Summary / Comparison Metrics */}
+          {viewMode === 'compare' && (
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h4 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <Layers size={18} /> Direct Comparison Δ
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Wellbeing', valA: resultsA.wellbeing, valB: resultsB.wellbeing },
+                  { label: 'Retention', valA: resultsA.business.retention, valB: resultsB.business.retention },
+                  { label: 'LTV', valA: resultsA.business.ltv, valB: resultsB.business.ltv },
+                  { label: 'Trust', valA: resultsA.mechanisms.trust, valB: resultsB.mechanisms.trust },
+                ].map(stat => {
+                  const diff = Math.round(stat.valB - stat.valA);
+                  return (
+                    <div key={stat.label} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1">{stat.label}</span>
+                      <div className={`text-sm font-black flex items-center gap-1 ${diff > 0 ? 'text-emerald-600' : diff < 0 ? 'text-red-600' : 'text-slate-400'}`}>
+                        {diff > 0 ? '+' : ''}{diff}%
+                        <span className="text-[10px] text-slate-400 font-normal ml-1">v. Baseline</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+      
+      <footer className="max-w-7xl mx-auto mt-12 pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
+          <Info size={14} />
+          <span>Relationships derived from behavioral science frameworks (SDT, BJ Fogg, and Digital Wellbeing studies).</span>
+        </div>
+        <div className="flex gap-4">
+           <span className="text-xs text-slate-400 font-medium px-3 py-1 bg-slate-100 rounded-full">v1.2 Logic Model Engine</span>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default App;
