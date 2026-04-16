@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Study — Capability-Sensitive AI Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #161618;
+    --surface2: #1e1e21;
+    --border: #2a2a2e;
+    --accent: #c8f060;
+    --accent2: #7eb8f7;
+    --accent3: #f0a060;
+    --text: #e8e6e0;
+    --muted: #7a7870;
+    --dim: #4a4844;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    font-size: 17px;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    width: 0%;
+    z-index: 999;
+    transition: width 0.1s;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(20px);
+    background: rgba(14,14,15,0.85);
+    border-bottom: 1px solid rgba(42,42,46,0.5);
+  }
+
+  .nav-brand {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .nav-brand span {
+    color: var(--accent);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,240,96,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,240,96,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+
+  .hero-bg-glow {
+    position: absolute;
+    top: -200px;
+    right: -200px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(200,240,96,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-left {
+    padding: 80px 64px 80px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(42px, 5vw, 68px);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s forwards;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-subtitle {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
+    line-height: 1.65;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s forwards;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s forwards;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    min-width: 100px;
+    padding-top: 2px;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .hero-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    padding: 80px 80px 80px 40px;
+    opacity: 0;
+    animation: fadeIn 1.2s 0.8s forwards;
+  }
+
+  .hero-visual {
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1;
+    position: relative;
+  }
+
+  .visual-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    animation: spin linear infinite;
+  }
+
+  .ring-1 {
+    inset: 0;
+    border-color: rgba(200,240,96,0.15);
+    animation-duration: 40s;
+  }
+
+  .ring-2 {
+    inset: 15%;
+    border-color: rgba(126,184,247,0.12);
+    animation-duration: 30s;
+    animation-direction: reverse;
+  }
+
+  .ring-3 {
+    inset: 30%;
+    border-color: rgba(240,160,96,0.1);
+    animation-duration: 20s;
+  }
+
+  .ring-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    top: -3px;
+    left: calc(50% - 3px);
+  }
+
+  .ring-1 .ring-dot { background: var(--accent); }
+  .ring-2 .ring-dot { background: var(--accent2); }
+  .ring-3 .ring-dot { background: var(--accent3); }
+
+  .visual-center {
+    position: absolute;
+    inset: 40%;
+    background: var(--surface);
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .visual-center span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .visual-label {
+    position: absolute;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .vl-top { top: 8%; left: 50%; transform: translateX(-50%); }
+  .vl-right { right: 5%; top: 50%; transform: translateY(-50%); }
+  .vl-bottom { bottom: 8%; left: 50%; transform: translateX(-50%); }
+  .vl-left { left: 5%; top: 50%; transform: translateY(-50%); }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 80px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+    z-index: 2;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--dim));
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* SECTION WRAPPER */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 120px 48px;
+  }
+
+  .section-narrow {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 100px 48px;
+  }
+
+  /* SECTION HEADERS */
+  .section-header {
+    margin-bottom: 64px;
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-number::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 80px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .section-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* STANCE SECTION */
+  .stance-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stance-section::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  .stance-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 48px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 64px;
+    align-items: start;
+  }
+
+  .stance-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-top: 6px;
+    position: sticky;
+    top: 120px;
+  }
+
+  .stance-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 2.5vw, 28px);
+    font-weight: 400;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--text);
+  }
+
+  .stance-text strong {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* FINDINGS GRID */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .finding-card {
+    background: var(--surface);
+    padding: 40px;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .finding-card:hover {
+    background: var(--surface2);
+  }
+
+  .finding-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 48px;
+    font-weight: 300;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .finding-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .finding-body {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .finding-opportunity {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent2);
+    letter-spacing: 0.04em;
+  }
+
+  .finding-opportunity::before {
+    content: '→ ';
+    color: var(--accent);
+  }
+
+  /* WELLNESS VERIFIED SECTION */
+  .wv-section {
+    background: linear-gradient(135deg, #0a1a0a 0%, var(--bg) 60%);
+    border-top: 1px solid rgba(200,240,96,0.2);
+    border-bottom: 1px solid rgba(200,240,96,0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wv-section::before {
+    content: 'WELLNESS VERIFIED';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Playfair Display', serif;
+    font-size: 160px;
+    font-weight: 900;
+    color: rgba(200,240,96,0.02);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.05em;
+  }
+
+  .wv-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 120px 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .wv-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(200,240,96,0.3);
+    border-radius: 2px;
+    padding: 8px 16px;
+    margin-bottom: 48px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .wv-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .wv-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 48px;
+  }
+
+  .wv-headline em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .wv-definition {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 80px;
+  }
+
+  .wv-def-text {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .wv-def-text p + p { margin-top: 20px; }
+
+  .wv-def-text strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .wv-criteria {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .wv-criterion {
+    background: rgba(10,26,10,0.8);
+    padding: 28px 32px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: background 0.3s;
+  }
+
+  .wv-criterion:hover {
+    background: rgba(200,240,96,0.04);
+  }
+
+  .wv-check {
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .wv-check::after {
+    content: '✓';
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  .wv-criterion-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  /* MODEL SECTION */
+  .model-section {
+    border-top: 1px solid var(--border);
+  }
+
+  .model-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 120px 48px;
+  }
+
+  .model-diagram {
+    margin-top: 64px;
+    position: relative;
+  }
+
+  .model-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .model-layer {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 0;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .layer-label {
+    background: var(--surface2);
+    padding: 24px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .layer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .layer-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .layer-content {
+    background: var(--surface);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .layer-item {
+    font-size: 14px;
+    color: var(--text);
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: border-color 0.2s;
+  }
+
+  .layer-item:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .model-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    color: var(--dim);
+    font-size: 20px;
+  }
+
+  /* DESIGN OPP SECTION */
+  .opps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 64px;
+  }
+
+  .opp-card {
+    background: var(--surface);
+    padding: 40px 32px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s;
+  }
+
+  .opp-card:hover {
+    background: var(--surface2);
+  }
+
+  .opp-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s;
+  }
+
+  .opp-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .opp-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  .opp-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .opp-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 20px;
+  }
+
+  .opp-impact {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    letter-spacing: 0.06em;
+  }
+
+  /* IMPACT SECTION */
+  .impact-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .impact-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 100px 48px;
+  }
+
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 48px;
+    margin-top: 64px;
+  }
+
+  .impact-item {
+    text-align: center;
+  }
+
+  .impact-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .impact-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .impact-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* REFLECTION */
+  .reflection-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 120px 48px;
+  }
+
+  .pull-quote {
+    margin: 48px 0;
+    padding: 40px 48px;
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+  }
+
+  .pull-quote p {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .reflection-body {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .reflection-body p + p {
+    margin-top: 24px;
+  }
+
+  .reflection-body strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .footer-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+
+  /* STICKY SIDEBAR NAV */
+  .side-nav {
+    position: fixed;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeIn 1s 2s forwards;
+  }
+
+  .side-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dim);
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .side-dot:hover, .side-dot.active {
+    background: var(--accent);
+    transform: scale(1.5);
+  }
+
+  .side-dot::before {
+    content: attr(data-label);
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+
+  .side-dot:hover::before {
+    opacity: 1;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  /* REVEAL ON SCROLL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s, transform 0.7s;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* INLINE TAG */
+  .tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--muted);
+    margin: 3px;
+  }
+
+  .tag.accent { border-color: rgba(200,240,96,0.3); color: var(--accent); }
+  .tag.blue { border-color: rgba(126,184,247,0.3); color: var(--accent2); }
+
+
+  /* RESEARCH SYNTHESIS */
+  .synthesis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 32px;
+  }
+
+  .synthesis-card {
+    background: var(--surface);
+    padding: 28px;
+  }
+
+  .synthesis-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 12px;
+  }
+
+  .synthesis-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+
+  .synthesis-body {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* TOOL ARTIFACT SECTION */
+  .artifact-section {
+    border-top: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(126,184,247,0.05), transparent 45%);
+  }
+
+  .artifact-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 120px 48px;
+  }
+
+  .artifact-intro {
+    max-width: 760px;
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .artifact-intro p + p {
+    margin-top: 18px;
+  }
+
+  .artifact-panel {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .artifact-panel-top {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .artifact-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .artifact-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 3.2vw, 40px);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .artifact-subtitle {
+    max-width: 650px;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .artifact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border: 1px solid rgba(126,184,247,0.35);
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .artifact-link:hover {
+    border-color: var(--accent2);
+    color: var(--text);
+  }
+
+  .artifact-logic {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr .9fr .9fr;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .artifact-cell {
+    background: var(--surface2);
+    padding: 24px 22px;
+    min-height: 220px;
+  }
+
+  .artifact-cell:nth-child(even) {
+    background: var(--surface);
+  }
+
+  .artifact-cell-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .artifact-cell h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    margin-bottom: 12px;
+  }
+
+  .artifact-cell p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+
+  .artifact-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .artifact-bullets span {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .artifact-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+  }
+
+  .artifact-footer-item {
+    background: var(--surface);
+    padding: 22px 24px;
+  }
+
+  .artifact-footer-item strong {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .artifact-footer-item span {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* MOBILE */
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { padding: 60px 24px 40px; }
+    .hero-right { display: none; }
+    .scroll-hint { left: 24px; }
+    .section { padding: 80px 24px; }
+    .section-narrow { padding: 80px 24px; }
+    .stance-inner { grid-template-columns: 1fr; gap: 24px; }
+    .wv-definition { grid-template-columns: 1fr; }
+    .findings-grid { grid-template-columns: 1fr; }
+    .opps-grid { grid-template-columns: 1fr; }
+    .impact-grid { grid-template-columns: repeat(2, 1fr); }
+    .wv-criteria { grid-template-columns: 1fr; }
+    .model-layer { grid-template-columns: 1fr; }
+    .synthesis-grid { grid-template-columns: 1fr; }
+    .artifact-logic { grid-template-columns: 1fr; }
+    .artifact-footer { grid-template-columns: 1fr; }
+    .side-nav { display: none; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    .wv-inner { padding: 80px 24px; }
+    .impact-inner { padding: 80px 24px; }
+    .model-inner { padding: 80px 24px; }
+    .reflection-inner { padding: 80px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<nav>
+  <div class="nav-brand">Omar · <span>UX Research</span></div>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#findings">Findings</a></li>
+    <li><a href="#framework">Wellness Verified</a></li>
+    <li><a href="#artifact">Artifact</a></li>
+    <li><a href="#design">Design</a></li>
+    <li><a href="#reflection">Reflection</a></li>
+  </ul>
+</nav>
+
+<div class="side-nav">
+  <div class="side-dot active" data-label="Overview" onclick="document.getElementById('overview').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Stance" onclick="document.getElementById('stance').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Findings" onclick="document.getElementById('findings').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Framework" onclick="document.getElementById('framework').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Artifact" onclick="document.getElementById('artifact').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Design" onclick="document.getElementById('design').scrollIntoView({behavior:'smooth'})"></div>
+  <div class="side-dot" data-label="Reflection" onclick="document.getElementById('reflection').scrollIntoView({behavior:'smooth'})"></div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="overview">
+  <div class="hero-bg-grid"></div>
+  <div class="hero-bg-glow"></div>
+
+  <div class="hero-left">
+    <div class="hero-tag">UX Research · AI Interaction Design · 2024</div>
+    <h1 class="hero-title">
+      Increasing Adoption Through<br>
+      <em>Capability-Sensitive</em><br>
+      AI Design
+    </h1>
+    <p class="hero-subtitle">
+      How interaction friction patterns shape activation, trust, usability, and long-term engagement in conversational AI — and how capability-sensitive design can broaden adoption.
+    </p>
+    <div class="hero-meta">
+      <div class="meta-row">
+        <span class="meta-label">Context</span>
+        <span class="meta-value">Conceptual Research Initiative · ChatGPT / OpenAI</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Role</span>
+        <span class="meta-value">UX Researcher (Solo)</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Methods</span>
+        <span class="meta-value">
+          <span class="tag accent">Literature Synthesis</span>
+          <span class="tag accent">Qualitative Observation</span>
+          <span class="tag accent">Comparative Pattern Analysis</span>
+          <span class="tag accent">Mental Model Mapping</span>
+          <span class="tag accent">Human Outcomes Mapping Canvas</span>
+        </span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Lens</span>
+        <span class="meta-value"><span class="tag blue">Wellness Verified™ Framework</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="visual-ring ring-1"><div class="ring-dot"></div></div>
+      <div class="visual-ring ring-2"><div class="ring-dot"></div></div>
+      <div class="visual-ring ring-3"><div class="ring-dot"></div></div>
+      <div class="visual-center"><span>Ecological<br>AI<br>Model</span></div>
+      <span class="visual-label vl-top">Interface Design</span>
+      <span class="visual-label vl-right">Trust</span>
+      <span class="visual-label vl-bottom">Cognitive Load</span>
+      <span class="visual-label vl-left">Mental Models</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll to explore</span>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- RESEARCH QUESTION -->
+<section class="section-narrow" id="question">
+  <div class="reveal">
+    <div class="section-number">00 / Research Question</div>
+    <h2 class="section-title" style="margin-bottom: 40px;">
+      The <em>question</em> that drove the work
+    </h2>
+    <p style="font-size: 19px; line-height: 1.75; color: var(--muted); margin-bottom: 32px;">
+      ChatGPT is widely perceived as accessible because it uses natural language. But <strong style="color: var(--text);">accessibility at the surface level is not the same as capability support.</strong> Effective use still requires skills that the interface rarely teaches — and the gap between who can access a tool and who can actually benefit from it is a design problem, not a user problem.
+    </p>
+    <p style="font-size: 19px; line-height: 1.75; color: var(--muted);">
+      This research asks: <strong style="color: var(--text);">how can ChatGPT improve early interaction success to increase activation, reduce disengagement, improve trust calibration, and support broader adoption?</strong>
+    </p>
+  </div>
+</section>
+
+<!-- STANCE SECTION -->
+<div class="stance-section" id="stance">
+  <div class="stance-inner">
+    <div class="stance-label">My Stance</div>
+    <div class="stance-text reveal">
+      I approach this as a <strong>behavioral scientist</strong>, not a critic of technology. The question isn't whether AI tools are good or bad — it's whether the environments we build around them support or erode human capacity.
+      <br><br>
+      People aren't failing to use these tools because they lack intelligence. They're encountering <strong>ecological mismatches</strong> — between what the system demands and what their current conditions allow. That's a design problem. And design problems have design solutions.
+      <br><br>
+      Flourishing is a function of fit. <strong>My job is to make the fit better.</strong>
+    </div>
+  </div>
+</div>
+
+<!-- FINDINGS -->
+<section class="section" id="findings">
+  <div class="section-header reveal">
+    <div class="section-number">01 / Findings</div>
+    <h2 class="section-title">Five interaction patterns<br>that <em>shape engagement</em></h2>
+  </div>
+
+  <div class="findings-grid reveal">
+    <div class="finding-card">
+      <div class="finding-number">01</div>
+      <div class="finding-title">Effective prompting relies on implicit skills the interface doesn't scaffold</div>
+      <div class="finding-body">
+        Context specification, goal clarification, constraint articulation — these behaviors are rarely explained. Users unfamiliar with them assume the first response is the system's ceiling.
+      </div>
+      <div class="finding-opportunity">Supporting first-session success increases likelihood of sustained engagement</div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-number">02</div>
+      <div class="finding-title">Cognitive load directly reduces interaction persistence</div>
+      <div class="finding-body">
+        Users approaching ChatGPT under time pressure, information overload, or task complexity are less likely to experiment with prompt variations — not because they don't know how, but because they don't have bandwidth.
+      </div>
+      <div class="finding-opportunity">Reducing cognitive friction increases task completion and reduces abandonment</div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-number">03</div>
+      <div class="finding-title">Trust formation depends on interpretability of system behavior</div>
+      <div class="finding-body">
+        Users vary significantly in how they evaluate AI outputs — some use factual confidence signals, others use tone or fluency. When reliability signals are ambiguous, users either overtrust, undertrust, or restrict use to low-stakes tasks.
+      </div>
+      <div class="finding-opportunity">Improving transparency strengthens calibrated trust — and appropriate reliance</div>
+    </div>
+    <div class="finding-card">
+      <div class="finding-number">04</div>
+      <div class="finding-title">Mental model clarity predicts depth of engagement</div>
+      <div class="finding-body">
+        Users who conceptualize ChatGPT as a collaborative, iterative tool show more adaptive interaction patterns. Users who see it as a one-shot answer engine underutilize capabilities and miss higher-value use cases.
+      </div>
+      <div class="finding-opportunity">Interface cues can cultivate more effective mental models through use</div>
+    </div>
+    <div class="finding-card" style="grid-column: span 2;">
+      <div class="finding-number">05</div>
+      <div class="finding-title">Early friction is the strongest predictor of disengagement</div>
+      <div class="finding-body">
+        Pre-prompt uncertainty — how specific to be, what to include, whether the tool is appropriate — produces hesitation before users even begin. This front-loaded friction is rarely designed around, yet it determines whether first-session outcomes are strong enough to generate a second session.
+      </div>
+      <div class="finding-opportunity">Reducing pre-prompt ambiguity is the highest-leverage early activation intervention</div>
+    </div>
+  </div>
+
+</section>
+
+<section class="section-narrow" id="synthesis">
+  <div class="reveal">
+    <div class="section-number">01A / Research Synthesis</div>
+    <h2 class="section-title" style="margin-bottom: 28px;">From observation to <em>mechanism-level</em> insight</h2>
+    <p style="font-size: 17px; color: var(--muted); line-height: 1.8; max-width: 720px;">
+      Qualitative observation suggested that conversational AI friction often begins before interaction becomes substantive. Users were not simply struggling with output quality. Many were struggling to translate real-world problems into structured requests, calibrate trust in responses, and decide whether iteration was even part of the interaction model. These patterns informed the Human Outcomes Mapping Canvas used later in the case study.
+    </p>
+  </div>
+
+  <div class="synthesis-grid reveal">
+    <div class="synthesis-card">
+      <div class="synthesis-kicker">Observed pattern</div>
+      <div class="synthesis-title">Task translation friction</div>
+      <div class="synthesis-body">Users often began with vague prompts, omitted context, and expected the system to infer situational details. Prompt formulation functioned as a hidden access barrier rather than a neutral first step.</div>
+    </div>
+    <div class="synthesis-card">
+      <div class="synthesis-kicker">Mechanism</div>
+      <div class="synthesis-title">Cognitive translation burden</div>
+      <div class="synthesis-body">Effective use required implicit capabilities: problem articulation, audience awareness, contextual specification, and tolerance for ambiguity under pressure.</div>
+    </div>
+    <div class="synthesis-card">
+      <div class="synthesis-kicker">Behavioral effect</div>
+      <div class="synthesis-title">Early hesitation and low iteration</div>
+      <div class="synthesis-body">Many participants treated ChatGPT as a one-turn answer engine. When first outputs were weak, interaction often ended before collaborative use patterns could emerge.</div>
+    </div>
+    <div class="synthesis-card">
+      <div class="synthesis-kicker">Design implication</div>
+      <div class="synthesis-title">Pre-prompt scaffolding is high leverage</div>
+      <div class="synthesis-body">Goal clarification, context prompts, interpretability cues, and iteration guidance can reduce early friction while broadening who reaches value quickly.</div>
+    </div>
+  </div>
+</section>
+
+<!-- WELLNESS VERIFIED -->
+<div class="wv-section" id="framework">
+  <div class="wv-inner">
+    <div class="wv-badge reveal">
+      <div class="wv-badge-dot"></div>
+      Theoretical Framework
+    </div>
+
+    <h2 class="wv-headline reveal">
+      The <em>Wellness Verified</em><br>
+      Evaluation Framework
+    </h2>
+
+    <div class="wv-definition">
+      <div class="wv-def-text reveal">
+        <p>
+          <strong>Wellness Verified</strong> is a meta-framework for evaluating whether digital environments actively support — or systematically undermine — human functioning across behavioral, cognitive, emotional, and social domains.
+        </p>
+        <p>
+          The core thesis: <strong>wellness is the emergent outcome of the dynamic interplay between intrapersonal, interpersonal, and socio-technical-ecological systems across time.</strong> It is not a feature you add. It is a property of the fit between a person and their environment.
+        </p>
+        <p>
+          Applied to AI interaction design, this framework asks whether the system expands or constrains user capability — not just in the moment, but across conditions, contexts, and types of users.
+        </p>
+        <p>
+          Think of it as a LEED certification model for digital product design: a structured, multi-domain lens for asking whether an environment actually earns the word <em>supportive</em>.
+        </p>
+      </div>
+
+      <div>
+        <p style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 24px; padding-left: 4px;">Applied Criteria — ChatGPT</p>
+        <div class="wv-criteria reveal">
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the interface reduce unnecessary cognitive burden on users?</div>
+          </div>
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the system support clarity of thinking rather than replacing it?</div>
+          </div>
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the interaction improve user confidence in completing real tasks?</div>
+          </div>
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the system help users achieve meaningful outcomes more efficiently?</div>
+          </div>
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the interface adapt to variability in user conditions and contexts?</div>
+          </div>
+          <div class="wv-criterion">
+            <div class="wv-check"></div>
+            <div class="wv-criterion-text">Does the design support calibrated trust — neither overdependence nor avoidance?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="padding: 40px; background: rgba(200,240,96,0.04); border: 1px solid rgba(200,240,96,0.15); border-radius: 2px;">
+      <p style="font-family: 'Playfair Display', serif; font-size: 20px; font-style: italic; line-height: 1.6; color: var(--text); margin-bottom: 16px;">
+        "Capability-supportive environments don't just help users succeed. They expand who <em>can</em> succeed — and that is both an ethical obligation and a product growth strategy."
+      </p>
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.08em;">— Wellness Verified Framework · AWI Studio</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="artifact-section" id="artifact">
+  <div class="artifact-wrap">
+    <div class="section-header reveal">
+      <div class="section-number">02 / Core Artifact</div>
+      <h2 class="section-title">Wellness Verified <em>Human Outcomes</em><br>Mapping Canvas</h2>
+    </div>
+
+    <div class="artifact-intro reveal">
+      <p>
+        To make the Wellness Verified lens operational inside a product workflow, I translated the framework into a structured synthesis artifact: the <strong style="color: var(--text);">Human Outcomes Mapping Canvas</strong>. The tool is used after qualitative synthesis to trace how interface conditions influence behavioral mechanisms, how those mechanisms shape user capability, and how those shifts affect both human and product outcomes.
+      </p>
+      <p>
+        Rather than stopping at friction identification, the canvas makes causal logic more explicit. It helps distinguish whether a design issue is creating cognitive burden, weakening trust calibration, constraining perceived agency, or limiting the user's ability to form a collaborative mental model of the system.
+      </p>
+    </div>
+
+    <div class="artifact-panel reveal">
+      <div class="artifact-panel-top">
+        <div>
+          <div class="artifact-kicker">Wellness Verified Tool 01 · Synthesis and concept evaluation</div>
+          <div class="artifact-title">Human Outcomes Mapping Canvas</div>
+          <div class="artifact-subtitle">
+            A structured artifact for mapping design conditions → mechanisms → capability effects → downstream outcomes. Used here to translate qualitative findings into a capability-sensitive product evaluation model.
+          </div>
+        </div>
+        <a class="artifact-link" href="wellness-verified-human-outcomes-canvas.tsx">Open canvas tool ↗</a>
+      </div>
+
+      <div class="artifact-logic">
+        <div class="artifact-cell">
+          <div class="artifact-cell-label">Design conditions</div>
+          <h4>What the interface is asking of the user</h4>
+          <div class="artifact-bullets">
+            <span>Pre-prompt guidance</span>
+            <span>Contextual scaffolding</span>
+            <span>Output interpretability</span>
+            <span>Trust calibration support</span>
+            <span>Iteration scaffolding</span>
+            <span>User control and adaptability</span>
+          </div>
+        </div>
+        <div class="artifact-cell">
+          <div class="artifact-cell-label">Mechanisms</div>
+          <h4>How design conditions shape behavior</h4>
+          <p>Cognitive load, prompt confidence, mental model clarity, perceived agency, trust calibration, and persistence likelihood.</p>
+        </div>
+        <div class="artifact-cell">
+          <div class="artifact-cell-label">Capability effects</div>
+          <h4>What becomes easier or harder</h4>
+          <p>First-prompt readiness, task confidence, collaborative use capacity, and equitable usability across different cognitive conditions.</p>
+        </div>
+        <div class="artifact-cell">
+          <div class="artifact-cell-label">Outcomes</div>
+          <h4>Why it matters strategically</h4>
+          <p>Activation success, responsible reliance, engagement depth, adoption breadth, retention durability, and long-term capability expansion.</p>
+        </div>
+      </div>
+
+      <div class="artifact-footer">
+        <div class="artifact-footer-item">
+          <strong>Why it matters</strong>
+          <span>This turns Wellness Verified from a high-level lens into a usable research method inside synthesis and concept evaluation.</span>
+        </div>
+        <div class="artifact-footer-item">
+          <strong>What it demonstrates</strong>
+          <span>Mechanism-level reasoning, causal pathway mapping, and a tighter connection between qualitative evidence and design recommendations.</span>
+        </div>
+        <div class="artifact-footer-item">
+          <strong>How I would use it</strong>
+          <span>As a recurring artifact across AI, productivity, and digital wellness case studies to evaluate whether products expand or constrain human capability.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ECOLOGICAL MODEL -->
+<div class="model-section" id="model">
+  <div class="model-inner">
+    <div class="section-header reveal">
+      <div class="section-number">03 / Conceptual Model</div>
+      <h2 class="section-title">The <em>Ecological</em><br>AI Interaction Model</h2>
+    </div>
+    <p class="reveal" style="font-size: 17px; color: var(--muted); line-height: 1.75; max-width: 660px; margin-bottom: 0;">
+      AI usability isn't just a function of model intelligence. It's the result of an interaction between interface design choices, user expectations, prior cognitive exposure, available bandwidth, and trust calibration ability. Observable behaviors like prompt specificity and iteration frequency reflect ecological fit — not fixed user ability. Design can shift that fit.
+    </p>
+
+    <div class="model-diagram reveal">
+      <div class="model-layers">
+        <div class="model-layer">
+          <div class="layer-label">
+            <div class="layer-dot" style="background: var(--accent);"></div>
+            <span class="layer-name">Interface Layer</span>
+          </div>
+          <div class="layer-content">
+            <span class="layer-item">Design choices</span>
+            <span class="layer-item">Affordances</span>
+            <span class="layer-item">Feedback loops</span>
+            <span class="layer-item">Onboarding scaffolding</span>
+            <span class="layer-item">Output interpretability</span>
+          </div>
+        </div>
+        <div class="model-arrow">↕</div>
+        <div class="model-layer">
+          <div class="layer-label">
+            <div class="layer-dot" style="background: var(--accent2);"></div>
+            <span class="layer-name">User Layer</span>
+          </div>
+          <div class="layer-content">
+            <span class="layer-item">Mental models</span>
+            <span class="layer-item">Cognitive bandwidth</span>
+            <span class="layer-item">Prior AI exposure</span>
+            <span class="layer-item">Trust calibration</span>
+            <span class="layer-item">Task expectations</span>
+          </div>
+        </div>
+        <div class="model-arrow">↕</div>
+        <div class="model-layer">
+          <div class="layer-label">
+            <div class="layer-dot" style="background: var(--accent3);"></div>
+            <span class="layer-name">Context Layer</span>
+          </div>
+          <div class="layer-content">
+            <span class="layer-item">Time pressure</span>
+            <span class="layer-item">Task complexity</span>
+            <span class="layer-item">Information overload</span>
+            <span class="layer-item">Social context of use</span>
+            <span class="layer-item">Stakes of outcome</span>
+          </div>
+        </div>
+        <div class="model-arrow">↓</div>
+        <div class="model-layer" style="border: 1px solid rgba(200,240,96,0.2);">
+          <div class="layer-label" style="background: rgba(200,240,96,0.08);">
+            <div class="layer-dot" style="background: var(--accent); box-shadow: 0 0 8px var(--accent);"></div>
+            <span class="layer-name" style="color: var(--accent);">Outcome Layer</span>
+          </div>
+          <div class="layer-content">
+            <span class="layer-item">Interaction success</span>
+            <span class="layer-item">Engagement depth</span>
+            <span class="layer-item">Trust formation</span>
+            <span class="layer-item">Retention</span>
+            <span class="layer-item">Adoption breadth</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DESIGN OPPORTUNITIES -->
+<section class="section" id="design">
+  <div class="section-header reveal">
+    <div class="section-number">04 / Design Opportunities</div>
+    <h2 class="section-title">Five interventions that<br><em>reduce friction</em> and expand access</h2>
+  </div>
+
+  <div class="opps-grid reveal">
+    <div class="opp-card">
+      <div class="opp-icon">🎯</div>
+      <div class="opp-title">Pre-Prompt Guidance</div>
+      <div class="opp-desc">Support users in clarifying intent before interaction begins. Goal clarification prompts, audience identification, and optional structured input fields reduce first-prompt ambiguity.</div>
+      <div class="opp-impact">↑ Activation success · ↑ First-response relevance</div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-icon">⚡</div>
+      <div class="opp-title">Input-Strength Feedback</div>
+      <div class="opp-desc">Signal when additional context could improve output quality — through suggested questions or completeness cues. Teaches effective prompting through use, reducing reliance on external resources.</div>
+      <div class="opp-impact">↓ Reliance on external prompt education · ↑ Skill formation</div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-icon">🔎</div>
+      <div class="opp-title">Trust Calibration Support</div>
+      <div class="opp-desc">Improve interpretability through structured signals: confidence indicators, verification prompts for factual outputs, and cues for appropriate critical review. Reduces both overreliance and avoidance.</div>
+      <div class="opp-impact">↓ Overtrust · ↓ Undertrust · ↑ Responsible use patterns</div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-icon">🔄</div>
+      <div class="opp-title">Iteration Normalization</div>
+      <div class="opp-desc">Make multi-step interaction the visible default — not a workaround. Suggested follow-up prompts and visible conversational progression encourage higher-value use case discovery.</div>
+      <div class="opp-impact">↑ Engagement depth · ↑ Feature discovery</div>
+    </div>
+    <div class="opp-card">
+      <div class="opp-icon">🌐</div>
+      <div class="opp-title">Adaptive Interaction Support</div>
+      <div class="opp-desc">Let guidance level adjust to demonstrated user behavior — more structure for first-time interactions, minimal interruption for experienced users. Improves usability across the full distribution without penalizing power users.</div>
+      <div class="opp-impact">↑ Adoption breadth · Neutral impact on expert UX</div>
+    </div>
+    <div class="opp-card" style="background: rgba(200,240,96,0.03); border-left: 2px solid rgba(200,240,96,0.3);">
+      <div class="opp-icon">🧭</div>
+      <div class="opp-title">The Unifying Principle</div>
+      <div class="opp-desc">None of these are charity features for "struggling users." They are precision interventions that expand the percentage of users who reach meaningful value quickly. Value realization speed is the strongest predictor of habit formation.</div>
+      <div class="opp-impact" style="color: var(--accent);">Capability design = growth design</div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<div class="impact-section">
+  <div class="impact-inner">
+    <div class="section-header reveal" style="margin-bottom: 0;">
+      <div class="section-number">05 / Expected Impact</div>
+      <h2 class="section-title">What capability-sensitive<br>design <em>actually produces</em></h2>
+    </div>
+
+    <div class="impact-grid reveal">
+      <div class="impact-item">
+        <span class="impact-icon">📈</span>
+        <div class="impact-label">Activation</div>
+        <div class="impact-desc">Higher first-session success rates across user segments, including those with lower prior AI exposure</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">🔁</span>
+        <div class="impact-label">Retention</div>
+        <div class="impact-desc">Users who reach value quickly form habits. Friction reduction accelerates the critical early engagement window</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">🤝</span>
+        <div class="impact-label">Trust</div>
+        <div class="impact-desc">Calibrated trust — neither dependent nor avoidant — produces more durable engagement and responsible use patterns</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">🌍</span>
+        <div class="impact-label">Adoption Breadth</div>
+        <div class="impact-desc">Expanding successful use across cognitive conditions and digital literacy levels widens the addressable user base</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REFLECTION -->
+<section id="reflection">
+  <div class="reflection-inner">
+    <div class="section-number reveal">06 / Reflection</div>
+
+    <div class="pull-quote reveal">
+      <p>"AI systems are increasingly functioning as thinking environments. Which means the design decisions inside them are not neutral. They are decisions about who gets to think clearly, and who doesn't."</p>
+    </div>
+
+    <div class="reflection-body reveal">
+      <p>
+        I conducted this research because I believe we are at a critical inflection point. The tools that will shape how people learn, solve problems, and connect with information are being designed right now — and most of them are being evaluated on engagement metrics that don't distinguish between productive use and compulsive use, or between trust and dependence.
+      </p>
+      <p>
+        The <strong>Wellness Verified framework</strong> exists because I needed a structured way to ask better questions. Not "is this tool being used?" but "does this tool expand what its users are capable of?" Not "is engagement high?" but "is the engagement building something, or eroding something?"
+      </p>
+      <p>
+        This case study is one application of that lens. But the lens is designed to be portable — applicable to any digital environment, any product, any platform that shapes human behavior at scale.
+      </p>
+      <p>
+        My goal as a researcher is not to be the person who points at what's broken. It's to be the person who <strong>expands what designers and product teams can see</strong> — and gives them conceptual tools to build better ecological fits between humans and the systems they rely on.
+      </p>
+    </div>
+
+    <div class="reveal" style="margin-top: 56px; padding: 32px 40px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px;">Theoretical Foundations</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <span class="tag">Bronfenbrenner Bioecological Theory</span>
+        <span class="tag">Self-Determination Theory</span>
+        <span class="tag">COM-B Model</span>
+        <span class="tag">Dual-Process Theory</span>
+        <span class="tag">Allostatic Load</span>
+        <span class="tag">Capability Approach</span>
+        <span class="tag">Implementation Science</span>
+        <span class="tag">Stress Science</span>
+        <span class="tag">HCI Research</span>
+        <span class="tag">Digital Literacy Studies</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  <div>
+    <div class="footer-name">Omar</div>
+    <div class="footer-meta" style="margin-top: 6px;">Applied Behavioral Scientist · UX Researcher · AWI Studio</div>
+  </div>
+  <div class="footer-meta" style="text-align: right;">
+    <div>Wellness Verified™ Framework</div>
+    <div style="margin-top: 4px;">Case Study · 2024</div>
+  </div>
+</footer>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const scrolled = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    document.getElementById('progressBar').style.width = scrolled + '%';
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Side nav active state
+  const sections = ['overview','stance','findings','framework','artifact','design','reflection'];
+  const dots = document.querySelectorAll('.side-dot');
+  
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY + 200;
+    let active = 0;
+    sections.forEach((id, i) => {
+      const el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) active = i;
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === active));
+  });
+</script>
+</body>
+</html>
